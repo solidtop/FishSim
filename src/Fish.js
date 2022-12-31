@@ -25,6 +25,7 @@ export default class Fish {
         this.directionDeviation = -10 + Math.random() * 20;
         this.rotationSpeed1 = .1;
         this.rotationSpeed2 = .15;
+        this.rotationSpeed3 = .2;
         this.wiggleSpeed = 0;
         this.wiggleAngle = 0;
         this.angle = Math.random() * 360;
@@ -49,7 +50,7 @@ export default class Fish {
         this.timer = {
             changePath: 1 + Math.random() * 2,
             resting: 5 + Math.random() * 30,
-            checkForFood: 1 + Math.random() * 2,
+            checkForFood: .5 + Math.random() * 2,
         };
 
         this.performingAction = false;
@@ -156,10 +157,10 @@ export default class Fish {
                 this.target.x = target.x;
                 this.target.y = target.y;
                 this.targetAngle = this.pointTowards(this.target.x, this.target.y);  
-                this.angle = smoothRotation(this.angle, this.targetAngle, this.rotationSpeed2 / deltaTime);
+                this.angle = smoothRotation(this.angle, this.targetAngle, this.rotationSpeed3 / deltaTime);
                 
                 const distanceToTarget = this.distanceToPoint(target.x, target.y);
-                if (distanceToTarget < 30) {
+                if (distanceToTarget < 20) {
                     this.rattle();
 
                     if (distanceToTarget <= 15) {
