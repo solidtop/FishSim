@@ -33,7 +33,7 @@ export default class Fish {
         this.yScale = this.xScale;
 
         this.sprite = new Image();
-        this.sprite.src = "/src/assets/fish.png";
+        this.sprite.src = "./src/assets/fish.png";
         this.sprite.onload = () => {
             this.width = this.sprite.naturalWidth * this.xScale;
             this.height = this.sprite.naturalHeight * this.yScale;
