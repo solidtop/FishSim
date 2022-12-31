@@ -24,12 +24,13 @@ canvas.addEventListener("mousemove", e => {
     mouseY = e.clientY;
 });
 
-
+const targetFrameTime = 1000 / 165;
 let lastTime = 0;
+let deltaTime = 0;
 let secondsPassed, fps;
 function gameLoop(timestamp) {
     secondsPassed = (timestamp - lastTime) / 1000;
-    let deltaTime = timestamp - lastTime;
+    deltaTime = (timestamp - lastTime) / targetFrameTime;
     lastTime = timestamp;
 
     ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
