@@ -34,12 +34,6 @@ function gameLoop(timestamp) {
 
     ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
-    fps = Math.round(1 / secondsPassed);
-    ctx.font = "20px Sans-Serif";
-    ctx.fillStyle = "black";
-    ctx.fillText("FPS: " + fps, 10, 30);
-
-
     fishes.forEach(fish => {
         fish.update(deltaTime);
         fish.draw(ctx);
@@ -55,10 +49,13 @@ function gameLoop(timestamp) {
         }
     });
 
-   
-
     ctx.fillStyle = backgroundColor;
     ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+
+    fps = Math.round(1 / secondsPassed);
+    ctx.font = "20px Sans-Serif";
+    ctx.fillStyle = "black";
+    ctx.fillText("FPS: " + fps, 10, 30);
   
     window.requestAnimationFrame(gameLoop);
 }
