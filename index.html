@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fish Sim</title>
+
+    <style>
+        #game-screen {
+            border: 1px solid black;
+        }
+
+        small {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="game-screen" width="1280" height="720"></canvas>
+
+    <p id="fish-display"></p>
+    <button id="btn-spawn-fish">Spawn Fish</button>
+    <button id="btn-spawn-food">Spawn Food</button>
+    
+    <small>Left mouse button: follow</small>
+    <small>Right mouse button: annoy</small>
+
+    <script src="./src/main.js" type="module"></script>
+
+</body>
+</html>
