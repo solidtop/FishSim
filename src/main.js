@@ -24,13 +24,15 @@ canvas.addEventListener("mousemove", e => {
     mouseY = e.clientY;
 });
 
-const targetFrameTime = 1000 / 165;
+const targetFrameRate = 60;
 let lastTime = 0;
 let deltaTime = 0;
 let secondsPassed, fps;
+
 function gameLoop(timestamp) {
+    window.requestAnimationFrame(gameLoop);
     secondsPassed = (timestamp - lastTime) / 1000;
-    deltaTime = (timestamp - lastTime) / targetFrameTime;
+    deltaTime = secondsPassed * targetFrameRate;
     lastTime = timestamp;
 
     ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
@@ -57,23 +59,23 @@ function gameLoop(timestamp) {
     ctx.font = "20px Sans-Serif";
     ctx.fillStyle = "black";
     ctx.fillText("FPS: " + fps, 10, 30);
-  
-    window.requestAnimationFrame(gameLoop);
 }
 window.requestAnimationFrame(gameLoop);
 
 function spawnFish(amount) {
+    const margin = 100;
     for (let i = 0; i < amount; i++) {
-        const x = Math.random() * GAME_WIDTH;
-        const y = Math.random() * GAME_HEIGHT;
+        const x = margin + Math.random() * GAME_WIDTH - (margin*2);
+        const y = margin + Math.random() * GAME_HEIGHT - (margin*2);
         fishes.push(new Fish(x, y));     
     }
     displayFishAmount(fishes.length); 
 }
 
 function spawnFood(amount) {
+    const margin = 50;
     for (let i = 0; i < amount; i++) {
-        const x = Math.random() * GAME_WIDTH;
+        const x = margin + Math.random() * GAME_WIDTH - (margin*2);
         const y = -8;
         foods.push(new Food(x, y));
     }

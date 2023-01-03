@@ -4,8 +4,8 @@ export default class Food {
     constructor(x, y) {
         this.x = x;
         this.y = y;
-        this.speed = 4;
-        this.deceleration = 0.05;
+        this.speed = 3;
+        this.deceleration = 0.04;
         this.angle = Math.random() * 360;
     }
 
@@ -19,10 +19,10 @@ export default class Food {
     }
 
     update(deltaTime) {
-        this.y += this.speed / deltaTime;
+        this.y += this.speed * deltaTime;
 
         if (this.speed > 0.5) {
-            this.speed -= this.deceleration / deltaTime;
+            this.speed -= this.deceleration * deltaTime;
         }
     }
 

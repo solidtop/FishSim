@@ -13,19 +13,20 @@ export default class Fish {
         FIGHTING: 6,
     }
 
+    static rotationSpeed1 = .05;
+    static rotationSpeed2 = .1;
+    static rotationSpeed3 = .15;
+
     constructor(x, y) {
         this.ID = Fish.ID++;
         this.x = x;
         this.y = y;
-        this.speed = 0;
+        this.speed = 1;
         this.targetSpeed = 1;        
-        this.acceleration = .1;
-        this.deceleration = .1;
+        this.acceleration = .05;
+        this.deceleration = .05;
         this.direction = 0;
         this.directionDeviation = -10 + Math.random() * 20;
-        this.rotationSpeed1 = .1;
-        this.rotationSpeed2 = .15;
-        this.rotationSpeed3 = .2;
         this.wiggleSpeed = 0;
         this.wiggleAngle = 0;
         this.angle = Math.random() * 360;
@@ -63,33 +64,29 @@ export default class Fish {
         ctx.rotate(this.angle + this.wiggleAngle);
         ctx.drawImage(this.sprite, -this.width/2, -this.height/2, this.width, this.height);
         ctx.restore(); 
-
-        ctx.fillStyle = 'black';
-        //ctx.fillText("speed: " + this.speed, this.x, this.y);
-
     }
 
     update(deltaTime) {
 
-        this.wiggleAngle = lerp(this.wiggleAngle, this.wiggle(), .8 / deltaTime); //Wiggle smoothing
+        this.wiggleAngle = lerp(this.wiggleAngle, this.wiggle(), .3 * deltaTime); //Wiggle smoothing
 
         if (this.speed < this.targetSpeed) {
-            this.speed += this.acceleration / deltaTime;
+            this.speed += this.acceleration * deltaTime;
         } else if (this.speed > 0) {
-            this.speed -= this.deceleration / deltaTime;
+            this.speed -= this.deceleration * deltaTime;
         }
 
         if (this.isOutsideRoom()) {
             this.targetAngle = this.pointTowards(GAME_WIDTH/2, GAME_HEIGHT/2);
-            this.angle = smoothRotation(this.angle, this.targetAngle, .2 / deltaTime);
+            this.angle = smoothRotation(this.angle, this.targetAngle, .2 * deltaTime);
         } else {
             this.handleStates(deltaTime);
         }
 
         this.direction = this.angle + degToRad(90);  
 
-        this.x += this.speed / deltaTime * Math.sin(this.direction);
-        this.y -= this.speed / deltaTime * Math.cos(this.direction);
+        this.x += this.speed * deltaTime * Math.sin(this.direction);
+        this.y -= this.speed * deltaTime * Math.cos(this.direction);
     }
 
     handleStates(deltaTime) {
@@ -102,7 +99,7 @@ export default class Fish {
         switch(this.state) {
             case Fish.states.IDLING:
                 this.targetAngle = this.pointTowards(this.target.x, this.target.y);  
-                this.angle = smoothRotation(this.angle, this.targetAngle, this.rotationSpeed1 / deltaTime);
+                this.angle = smoothRotation(this.angle, this.targetAngle, Fish.rotationSpeed1 * deltaTime);
 
                 timerIsFinished = this.timerCountdown("changePath", deltaTime);
                 if (timerIsFinished) {
@@ -124,16 +121,16 @@ export default class Fish {
                     this.target.x = getMouseX();
                     this.target.y = getMouseY();
                     this.targetAngle = this.pointTowards(this.target.x, this.target.y);  
-                    this.angle = smoothRotation(this.angle, this.targetAngle + degToRad(this.directionDeviation), this.rotationSpeed2 / deltaTime);
+                    this.angle = smoothRotation(this.angle, this.targetAngle + degToRad(this.directionDeviation), Fish.rotationSpeed2 * deltaTime);
                 } 
                 break;
 
             case Fish.states.AVOIDING:
-                if (this.distanceToPoint(getMouseX(), getMouseY()) < 100) {
+                if (this.distanceToPoint(getMouseX(), getMouseY()) < 150) {
                     this.target.x = getMouseX();
                     this.target.y = getMouseY();
                     this.targetAngle = this.pointTowards(this.target.x, this.target.y) - 180;  
-                    this.angle = smoothRotation(this.angle, this.targetAngle, this.rotationSpeed2 / deltaTime);
+                    this.angle = smoothRotation(this.angle, this.targetAngle, Fish.rotationSpeed2 * deltaTime);
                 } else {
                     this.changeState(Fish.states.IDLING);
                 }
@@ -157,7 +154,7 @@ export default class Fish {
                 this.target.x = target.x;
                 this.target.y = target.y;
                 this.targetAngle = this.pointTowards(this.target.x, this.target.y);  
-                this.angle = smoothRotation(this.angle, this.targetAngle, this.rotationSpeed3 / deltaTime);
+                this.angle = smoothRotation(this.angle, this.targetAngle, Fish.rotationSpeed3 * deltaTime);
                 
                 const distanceToTarget = this.distanceToPoint(target.x, target.y);
                 if (distanceToTarget < 20) {
@@ -198,16 +195,16 @@ export default class Fish {
 
     setStateSpeed(state) {
         switch(state) {
-            case Fish.states.IDLING: this.targetSpeed = .5 + Math.random() * 2; break;  6
-            case Fish.states.FOLLOWING: this.targetSpeed = 5 + Math.random() * 1;  break; 
-            case Fish.states.AVOIDING: this.targetSpeed = 6 + Math.random() * 2; break;
-            case Fish.states.RESTING: this.targetSpeed = .5; break;  
-            case Fish.states.MOVING_TO_TARGET: this.targetSpeed = 5; break;
-            case Fish.states.EATING: this.targetSpeed = .5; break; 
-            case Fish.states.FIGHTING: this.targetSpeed = 5; break; 
+            case Fish.states.IDLING: this.targetSpeed = .3 + Math.random() * 1; break;  
+            case Fish.states.FOLLOWING: this.targetSpeed = 2 + Math.random() * 1;  break; 
+            case Fish.states.AVOIDING: this.targetSpeed = 2 + Math.random() * 2; break;
+            case Fish.states.RESTING: this.targetSpeed = .2; break;  
+            case Fish.states.MOVING_TO_TARGET: this.targetSpeed = 2; break;
+            case Fish.states.EATING: this.targetSpeed = .2; break; 
+            case Fish.states.FIGHTING: this.targetSpeed = 2; break; 
         }
         const deviation = -.05 + Math.random() * 0.15; 
-        this.wiggleSpeed = this.targetSpeed > 4 ? .3 + deviation: .7 + deviation;
+        this.wiggleSpeed = this.targetSpeed >= 2 ? .3 + deviation: .7 + deviation;
     }
 
     pointTowards(x, y) {
@@ -230,8 +227,8 @@ export default class Fish {
         const duration = 3;
         const rockValue = animationWave(.1, duration);
         this.targetAngle = this.angle + rockValue;
-        this.angle = smoothRotation(this.angle, this.targetAngle, this.rotationSpeed1 / deltaTime);
-        this.y += rockValue / deltaTime;
+        this.angle = smoothRotation(this.angle, this.targetAngle, Fish.rotationSpeed1 * deltaTime);
+        this.y += rockValue * deltaTime;
     }
 
     rattle() {
@@ -249,7 +246,7 @@ export default class Fish {
 
     timerCountdown(timer, deltaTime) {
         if (this.timer[timer] > 0) {
-            this.timer[timer] -= 1/30 / deltaTime;
+            this.timer[timer] -= 1/60 * deltaTime;
             return false;
         } else if (this.timer[timer] != null) {
             this.timer[timer] = null;
@@ -270,7 +267,6 @@ export default class Fish {
     }
 
     nearestInstance(arr) { 
-        
         arr.forEach(obj => {
             obj.distance = this.distanceToPoint(obj.x, obj.y);
         });
@@ -283,10 +279,6 @@ export default class Fish {
         delete arr[0].distance;
         
         return arr[0];
-    }
-
-    eat(food) {
-        console.log('nonom');
     }
 }
 
@@ -308,4 +300,4 @@ function animationWave(range, duration) {
     const a4 = (range - -range) * 0.5;
     return(-range + a4 + Math.sin((((Date.now() / 1000) + duration) / duration) * (Math.PI*2)) * a4);
 }
-
+6
