@@ -1,4 +1,4 @@
-import Fish from "./Fish.js";
+import { Fish, Enemy } from "./Fish.js";
 import Food from "./Food.js";
 
 const canvas = document.querySelector("#game-screen");
@@ -12,9 +12,10 @@ backgroundColor.addColorStop(1, "rgb(0, 95, 170, .8)");
 
 canvas.oncontextmenu = e => { e.preventDefault(); e.stopPropagation(); }
 
-const fishes = [];
-spawnFish(50);
+export const fishes = [];
+spawnFish(20);
 
+export const enemies = [];
 export const foods = [];
 
 let mouseX = 0; 
@@ -40,6 +41,11 @@ function gameLoop(timestamp) {
     fishes.forEach(fish => {
         fish.update(deltaTime);
         fish.draw(ctx);
+    });
+    
+    enemies.forEach(enemy => {
+        enemy.update(deltaTime);
+        enemy.draw(ctx);
     });
 
     foods.forEach((food, i) => {
@@ -72,6 +78,11 @@ function spawnFish(amount) {
     displayFishAmount(fishes.length); 
 }
 
+export function removeFish(index) {
+    fishes.splice(index, 1);
+    displayFishAmount(fishes.length); 
+}
+
 function spawnFood(amount) {
     const margin = 50;
     for (let i = 0; i < amount; i++) {
@@ -79,6 +90,19 @@ function spawnFood(amount) {
         const y = -8;
         foods.push(new Food(x, y));
     }
+}
+
+function spawnEnemy(amount) {
+    const margin = 100;
+    for (let i = 0; i < amount; i++) {
+        const x = margin + Math.random() * GAME_WIDTH - (margin*2);
+        const y = choose(-margin, GAME_HEIGHT + margin);
+        enemies.push(new Enemy(x, y));     
+    }   
+}
+
+export function removeEnemy(index) {
+    enemies.splice(index, 1);
 }
 
 //Set global fish target x & y once in a while to create an illusion that they swim together
@@ -113,6 +137,14 @@ export function clamp(n, min, max) {
     return Math.max(min, Math.min(n, max));
 }
 
+export function choose(a, b) {
+    if (Math.random() >= .5) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
 //Handle input events
 canvas.addEventListener("mousedown", e => {
     switch(e.which) {
@@ -125,6 +157,10 @@ canvas.addEventListener("mousedown", e => {
         case 3: //Right mb
             fishes.forEach(fish => {
                 fish.changeState(Fish.states.AVOIDING);
+                fish.target.obj = {
+                    x: getMouseX(),
+                    y: getMouseY(),
+                };
             });
             break;
     }
@@ -141,6 +177,9 @@ document.querySelector("#btn-spawn-fish").addEventListener("click", () => {
 });
 document.querySelector("#btn-spawn-food").addEventListener("click", () => {
     spawnFood(1);
+});
+document.querySelector("#btn-spawn-enemy").addEventListener("click", () => {
+    spawnEnemy(1);
 });
 
 function displayFishAmount(amount) {
