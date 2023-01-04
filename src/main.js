@@ -165,12 +165,12 @@ canvas.addEventListener("mousedown", e => {
             break;
     }
 });
+
 window.addEventListener("mouseup", e => {
     fishes.forEach(fish => {
         fish.changeState(Fish.states.IDLING);
     });
 });
-
 
 document.querySelector("#btn-spawn-fish").addEventListener("click", () => {
     spawnFish(1);

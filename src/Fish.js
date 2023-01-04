@@ -14,18 +14,23 @@ class FishParent {
     }
 
     static rotationSpeed1 = .05;
-    static rotationSpeed2 = .1;
-    static rotationSpeed3 = .15;
+    static rotationSpeed2 = .08;
+    static rotationSpeed3 = .1;
     static rotationSpeed4 = .2;
     static avoidDistance = 200;
+    static eatingDistance = 15;
 
     constructor() {
         this.ID = Fish.ID++;
+        this.speed = 1;
+        this.targetSpeed = 1;    
         this.direction = 0;
         this.directionDeviation = -10 + Math.random() * 20;
         this.wiggleSpeed = 0;
         this.wiggleAngle = 0;
         this.angle = Math.random() * 360;
+        this.targetAngle = this.angle;
+        this.facing = 1;
         
         this.state = Fish.states.IDLING;
         this.target = {
@@ -40,6 +45,7 @@ class FishParent {
         ctx.save();
         ctx.translate(this.x, this.y);
         ctx.rotate(this.angle + this.wiggleAngle);
+        ctx.scale(1, 1);
         ctx.drawImage(this.sprite, -this.width/2, -this.height/2, this.width, this.height);
         ctx.restore(); 
     }
@@ -61,7 +67,7 @@ class FishParent {
             this.handleStates(deltaTime);
         }
 
-        this.direction = this.angle + degToRad(90);  
+        this.direction = this.angle + degToRad(90); 
 
         this.x += this.speed * deltaTime * Math.sin(this.direction);
         this.y -= this.speed * deltaTime * Math.cos(this.direction);
@@ -120,7 +126,7 @@ class FishParent {
         this.y < -this.height || this.y > GAME_HEIGHT + this.height; 
     }
 
-    timerCountdown(timer, deltaTime) {
+    timerCountdown(timer, deltaTime) { 
         if (this.timer[timer] > 0) {
             this.timer[timer] -= 1/60 * deltaTime;
             return false;
@@ -153,8 +159,6 @@ export class Fish extends FishParent {
         super();
         this.x = x;
         this.y = y;
-        this.speed = 1;
-        this.targetSpeed = 1;        
         this.acceleration = .05;
         this.deceleration = .05;
         this.xScale = .15 + Math.random() * .05;
@@ -255,10 +259,10 @@ export class Fish extends FishParent {
                 this.angle = smoothRotation(this.angle, this.targetAngle, Fish.rotationSpeed3 * deltaTime);
                 
                 const distanceToTarget = this.distanceToPoint(target.x, target.y);
-                if (distanceToTarget < 20) {
+                if (distanceToTarget < Fish.eatingDistance + 10) {
                     this.rattle();
 
-                    if (distanceToTarget <= 15) {
+                    if (distanceToTarget <= Fish.eatingDistance) {
                         this.changeState(Fish.states.EATING);
                     } 
                 }
@@ -316,12 +320,10 @@ export class Enemy extends FishParent {
     constructor(x, y) {
         super();
         this.x = x;
-        this.y = y;
-        this.speed = 1;
-        this.targetSpeed = 1;        
+        this.y = y;  
         this.acceleration = .03;
         this.deceleration = .03;
-        this.xScale = .4;
+        this.xScale = .18 + Math.random() * .1;
         this.yScale = this.xScale;
 
         this.sprite = new Image();
@@ -383,9 +385,9 @@ export class Enemy extends FishParent {
                 this.angle = smoothRotation(this.angle, this.targetAngle, Fish.rotationSpeed3 * deltaTime);
                 
                 const distanceToTarget = this.distanceToPoint(target.x, target.y);
-                if (distanceToTarget < 30) {6
+                if (distanceToTarget < Fish.eatingDistance + 5) {
                     this.rattle();
-                    if (distanceToTarget <= 20) {
+                    if (distanceToTarget <= Fish.eatingDistance) {
                         this.changeState(Fish.states.EATING);
                     } 
                 } else if (distanceToTarget > 500) {
@@ -398,10 +400,9 @@ export class Enemy extends FishParent {
                 removeFish(index);
                 this.changeState(Fish.states.IDLING);
                 break;
-
             case Fish.states.FLEEING: 
                 this.targetAngle = this.pointTowards(this.target.x, this.target.y);  
-                this.angle = smoothRotation(this.angle, this.targetAngle, Fish.rotationSpeed3 * deltaTime);
+                this.angle = smoothRotation(this.angle, this.targetAngle, Fish.rotationSpeed1 * deltaTime);
 
                 if (this.isOutsideRoom()) {
                     const index = enemies.indexOf(this);
