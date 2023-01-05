@@ -71,8 +71,8 @@ window.requestAnimationFrame(gameLoop);
 function spawnFish(amount) {
     const margin = 100;
     for (let i = 0; i < amount; i++) {
-        const x = margin + Math.random() * GAME_WIDTH - (margin*2);
-        const y = margin + Math.random() * GAME_HEIGHT - (margin*2);
+        const x = margin + (Math.random() * GAME_WIDTH - margin*2);
+        const y = margin + (Math.random() * GAME_HEIGHT - margin*2);
         fishes.push(new Fish(x, y));     
     }
     displayFishAmount(fishes.length); 
@@ -86,7 +86,7 @@ export function removeFish(index) {
 function spawnFood(amount) {
     const margin = 50;
     for (let i = 0; i < amount; i++) {
-        const x = margin + Math.random() * GAME_WIDTH - (margin*2);
+        const x = margin + (Math.random() * GAME_WIDTH - margin*2);
         const y = -8;
         foods.push(new Food(x, y));
     }
@@ -95,7 +95,7 @@ function spawnFood(amount) {
 function spawnEnemy(amount) {
     const margin = 100;
     for (let i = 0; i < amount; i++) {
-        const x = margin + Math.random() * GAME_WIDTH - (margin*2);
+        const x = margin + (Math.random() * GAME_WIDTH - margin*2);
         const y = choose(-margin, GAME_HEIGHT + margin);
         enemies.push(new Enemy(x, y));     
     }   

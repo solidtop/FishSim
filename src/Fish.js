@@ -20,6 +20,8 @@ class FishParent {
     static avoidDistance = 200;
     static eatingDistance = 15;
 
+    static actionCooldown = 1;
+
     constructor() {
         this.ID = Fish.ID++;
         this.speed = 1;
@@ -39,6 +41,7 @@ class FishParent {
             obj: null,
         };
         this.performingAction = false;
+        this.canPerformAction = true;
     }
 
     draw(ctx) {
@@ -160,7 +163,7 @@ export class Fish extends FishParent {
         this.x = x;
         this.y = y;
         this.acceleration = .05;
-        this.deceleration = .05;
+        this.deceleration = .03;
         this.xScale = .15 + Math.random() * .05;
         this.yScale = this.xScale;
 
@@ -176,6 +179,7 @@ export class Fish extends FishParent {
             resting: 5 + Math.random() * 30,
             checkForFood: .5 + Math.random() * 2,
             checkForEnemies: 1,
+            canPerformAction: -1,
         };        
 
         this.changeState(Fish.states.IDLING);
@@ -193,6 +197,10 @@ export class Fish extends FishParent {
         if (timerIsFinished) {
             this.checkForEnemies();
             this.timer["checkForEnemies"] = 1;
+        }
+        timerIsFinished = this.timerCountdown("canPerformAction", deltaTime);
+        if (timerIsFinished) {
+            this.canPerformAction = true;
         }
         switch(this.state) {
             case Fish.states.IDLING:
@@ -269,9 +277,14 @@ export class Fish extends FishParent {
                 break;
 
             case Fish.states.EATING:
-                const index = foods.indexOf(this.target.obj);
-                foods.splice(index, 1);
-                this.changeState(Fish.states.IDLING);
+                if (this.canPerformAction) {
+                    const index = foods.indexOf(this.target.obj);
+                    foods.splice(index, 1);
+                    this.changeState(Fish.states.IDLING);
+
+                    this.canPerformAction = false;
+                    this.timer["canPerformAction"] = Fish.actionCooldown;
+                }
                 break;
         } 
     }
@@ -291,7 +304,7 @@ export class Fish extends FishParent {
     }
 
     checkForFood() {
-        if (foods.length <= 0) return;
+        if (foods.length <= 0 || !this.canPerformAction) return;
         const nearest = this.nearestInstance(foods); 
 
         if (this.distanceToPoint(nearest.x, nearest.y) <= 600) {
@@ -321,7 +334,7 @@ export class Enemy extends FishParent {
         super();
         this.x = x;
         this.y = y;  
-        this.acceleration = .03;
+        this.acceleration = .04;
         this.deceleration = .03;
         this.xScale = .18 + Math.random() * .1;
         this.yScale = this.xScale;
@@ -336,6 +349,7 @@ export class Enemy extends FishParent {
         this.timer = {
             changePath: 1 + Math.random() * 2,
             checkForFish: 1,
+            canPerformAction: -1,
         };        
       
         this.changeState(Fish.states.IDLING);
@@ -357,6 +371,10 @@ export class Enemy extends FishParent {
         if (timerIsFinished) {
             this.checkForFish();
             this.timer["checkForFish"] = 1;
+        }
+        timerIsFinished = this.timerCountdown("canPerformAction", deltaTime);
+        if (timerIsFinished) {
+            this.canPerformAction = true;
         }
 
         switch(this.state) {
@@ -393,12 +411,17 @@ export class Enemy extends FishParent {
                 } else if (distanceToTarget > 500) {
                     this.changeState(Fish.states.IDLING);
                 }
-                break;6
+                break;
 
             case Fish.states.EATING: 
-                const index = fishes.indexOf(this.target.obj);
-                removeFish(index);
-                this.changeState(Fish.states.IDLING);
+                if (this.canPerformAction) {
+                    const index = fishes.indexOf(this.target.obj);
+                    removeFish(index);
+                    this.changeState(Fish.states.IDLING);
+
+                    this.canPerformAction = false;
+                    this.timer["canPerformAction"] = Fish.actionCooldown;
+                }
                 break;
             case Fish.states.FLEEING: 
                 this.targetAngle = this.pointTowards(this.target.x, this.target.y);  
@@ -408,7 +431,6 @@ export class Enemy extends FishParent {
                     const index = enemies.indexOf(this);
                     removeEnemy(index);
                 }
-
                 break;
         } 
     }
@@ -426,7 +448,7 @@ export class Enemy extends FishParent {
     }
 
     checkForFish() {
-        if (fishes.length <= 0 || this.performingAction) return;
+        if (fishes.length <= 0 || !this.canPerformAction) return;
         const nearest = this.nearestInstance(fishes); 
 
         if (this.distanceToPoint(nearest.x, nearest.y) <= 500) {

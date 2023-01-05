@@ -5,7 +5,7 @@ export default class Food {
         this.x = x;
         this.y = y;
         this.speed = 3;
-        this.deceleration = 0.04;
+        this.deceleration = 0.03;
         this.angle = Math.random() * 360;
     }
 
