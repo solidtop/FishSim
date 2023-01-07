@@ -118,7 +118,7 @@ export function removeEnemy(index) {
 }
 
 export function spawnBubbles(x, y, amount) {
-    const area = 20;
+    const area = 5;
     partEmitter.setRegion(x-area, x+(area*2), y-area, y+(area*2));
     partEmitter.burst(partBubbles, amount);
 }

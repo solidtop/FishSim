@@ -7,8 +7,19 @@
     <title>Fish Sim</title>
 
     <style>
+        html, body {
+            background-color: rgb(30, 30, 30);
+            color: white;
+        }
+
         #game-screen {
             border: 1px solid black;
+            background-color: white;
+        }
+
+        .hud {
+            display: block;
+            margin: auto;
         }
 
         small {
@@ -19,15 +30,16 @@
 <body>
     <canvas id="game-screen" width="1280" height="720"></canvas>
 
-    <p id="fish-display"></p>
-    <button id="btn-spawn-fish">Spawn Fish</button>
-    <button id="btn-spawn-food">Spawn Food</button>
-    
-    <small>Left mouse button: follow</small>
-    <small>Right mouse button: annoy</small>
+    <div class="hud">
+        <p id="fish-display"></p>
+        <button id="btn-spawn-fish">Spawn Fish</button>
+        <button id="btn-spawn-food">Spawn Food</button>
+        
+        <small>Left mouse button: follow</small>
+        <small>Right mouse button: annoy</small>
 
-    <button id="btn-spawn-enemy">Spawn Enemy</button>
-
+        <button id="btn-spawn-enemy">Spawn Enemy</button>
+    </div>
 
     <script src="./src/main.js" type="module"></script>
 

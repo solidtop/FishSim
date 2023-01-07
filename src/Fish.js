@@ -356,7 +356,7 @@ export class Enemy extends FishParent {
       
         this.changeState(Fish.states.IDLING);
 
-        const time = Math.round(randomRange(10, 15));
+        const time = randomRange(10, 15);
         setTimeout(() => {
             this.changeState(Fish.states.FLEEING);
             this.target.x = choose(-100, 100);
@@ -452,7 +452,7 @@ export class Enemy extends FishParent {
     }
 
     checkForFish() {
-        if (fishes.length <= 0 || !this.canPerformAction) return;
+        if (fishes.length <= 0 || !this.canPerformAction || this.performingAction) return;
         const nearest = this.nearestInstance(fishes); 
 
         if (this.distanceToPoint(nearest.x, nearest.y) <= 500) {

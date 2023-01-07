@@ -15,12 +15,12 @@ export class ParticleSystem {
             //Wiggles
             let angle = particle.angle;
             if (type.anglWiggle > 0) {
-                angle = particle.angle + animationWave(type.anglWiggle, 1);
+                angle = particle.angle + animationWave(type.anglWiggle, 1 + particle.wiggleOffset);
             } 
 
             let size = particle.size;
             if (type.sizeWiggle > 0) {
-                size = particle.size + animationWave(type.sizeWiggle, 1);    
+                size = particle.size + animationWave(type.sizeWiggle, 1 + particle.wiggleOffset);    
             }
 
             ctx.save();
@@ -61,7 +61,7 @@ export class ParticleSystem {
             //Wiggles
             let dir = particle.dir;
             if (type.dirWiggle > 0) {
-                dir = particle.dir + animationWave(type.dirWiggle, 1);
+                dir = particle.dir + animationWave(type.dirWiggle, 1 + particle.wiggleOffset);
             }
             dir = degToRad(dir);
             particle.x += particle.speed * deltaTime * Math.cos(dir);
@@ -88,6 +88,7 @@ export class ParticleSystem {
             angle: randomRange(type.angMin, type.angMax),
             life: life,
             fadeSpd: type.alpha1 / life,
+            wiggleOffset: randomRange(-.1, .1),
         });
     }
 
