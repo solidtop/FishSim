@@ -1,4 +1,5 @@
-import { GAME_WIDTH, GAME_HEIGHT, getMouseX, getMouseY, removeFish, removeEnemy, foods, fishes, enemies, lerp, choose, clamp } from "./main.js";
+import { GAME_WIDTH, GAME_HEIGHT, removeFish, removeEnemy, foods, fishes, enemies, spawnBubbles, } from "./main.js";
+import { getMouseX, getMouseY, degToRad, lerp, choose, clamp, randomRange, animationWave } from "./misc.js";
 
 class FishParent {
     static ID = 0;
@@ -27,7 +28,7 @@ class FishParent {
         this.speed = 1;
         this.targetSpeed = 1;    
         this.direction = 0;
-        this.directionDeviation = -10 + Math.random() * 20;
+        this.directionDeviation = randomRange(-10, 10);
         this.wiggleSpeed = 0;
         this.wiggleAngle = 0;
         this.angle = Math.random() * 360;
@@ -109,7 +110,7 @@ class FishParent {
     wiggle() {
         if (this.targetSpeed < 0.5) return 0;
         const duration = this.wiggleSpeed;
-        return animationWave(.1, duration);
+        return animationWave(.2, duration);
     }
 
     rock(deltaTime) {
@@ -121,7 +122,7 @@ class FishParent {
     }
 
     rattle() {
-        this.angle += animationWave(.1, .02);
+        this.angle += animationWave(.01, .3);
     }
 
     isOutsideRoom() {
@@ -163,8 +164,8 @@ export class Fish extends FishParent {
         this.x = x;
         this.y = y;
         this.acceleration = .05;
-        this.deceleration = .03;
-        this.xScale = .15 + Math.random() * .05;
+        this.deceleration = .03; 
+        this.xScale = randomRange(.15, .2);
         this.yScale = this.xScale;
 
         this.sprite = new Image();
@@ -175,9 +176,9 @@ export class Fish extends FishParent {
         }
       
         this.timer = {
-            changePath: 1 + Math.random() * 2,
-            resting: 5 + Math.random() * 30,
-            checkForFood: .5 + Math.random() * 2,
+            changePath: randomRange(1, 3),
+            resting: randomRange(5, 35),
+            checkForFood: randomRange(.5, 2.5),
             checkForEnemies: 1,
             canPerformAction: -1,
         };        
@@ -212,12 +213,12 @@ export class Fish extends FishParent {
                     this.setStateSpeed(Fish.states.IDLING);
                     this.target.x = Math.random() * GAME_WIDTH;
                     this.target.y = Math.random() * GAME_HEIGHT;
-                    this.timer["changePath"] = 1 + Math.random() * 3;
+                    this.timer["changePath"] = randomRange(1, 4);
                 }
                 timerIsFinished = this.timerCountdown("resting", deltaTime);
                 if (timerIsFinished) {
                     this.changeState(Fish.states.RESTING);
-                    this.timer["resting"] = 2 + Math.random() * 2;
+                    this.timer["resting"] = randomRange(2, 4);
                 }
                 break;
 
@@ -235,7 +236,7 @@ export class Fish extends FishParent {
                 if (this.distanceToPoint(target.x, target.y) < Fish.avoidDistance) {
                     timerIsFinished = this.timerCountdown("changePath", deltaTime);
                     if (timerIsFinished) {
-                        this.directionDeviation = -10 + Math.random() * 20;
+                        this.directionDeviation = randomRange(-10, 10);
                         this.timer["changePath"] = 2;
                     } 
                     this.targetAngle = this.pointTowards(target.x, target.y) - 180 + this.directionDeviation;  
@@ -252,7 +253,7 @@ export class Fish extends FishParent {
                 timerIsFinished = this.timerCountdown("resting", deltaTime);
                 if (timerIsFinished) {
                     this.changeState(Fish.states.IDLING);
-                    this.timer["resting"] = 20 + Math.random() * 10;
+                    this.timer["resting"] = randomRange(20, 30);
                 }
                 break;
 
@@ -281,6 +282,7 @@ export class Fish extends FishParent {
                     const index = foods.indexOf(this.target.obj);
                     foods.splice(index, 1);
                     this.changeState(Fish.states.IDLING);
+                    spawnBubbles(this.x, this.y, 2);
 
                     this.canPerformAction = false;
                     this.timer["canPerformAction"] = Fish.actionCooldown;
@@ -291,16 +293,16 @@ export class Fish extends FishParent {
 
     setStateSpeed(state) {
         switch(state) {
-            case Fish.states.IDLING: this.targetSpeed = .3 + Math.random() * 1; break;  
-            case Fish.states.FOLLOWING: this.targetSpeed = 2 + Math.random() * 1;  break; 
-            case Fish.states.AVOIDING: this.targetSpeed = 2 + Math.random() * 1; break;
+            case Fish.states.IDLING: this.targetSpeed = randomRange(.3, 1.3); break;  
+            case Fish.states.FOLLOWING: this.targetSpeed = randomRange(2, 3);  break; 
+            case Fish.states.AVOIDING: this.targetSpeed = randomRange(2, 3); break;
             case Fish.states.RESTING: this.targetSpeed = .2; break;  
             case Fish.states.MOVING_TO_TARGET: this.targetSpeed = 2; break;
             case Fish.states.EATING: this.targetSpeed = .2; break; 
             case Fish.states.FIGHTING: this.targetSpeed = 2; break; 
-        }
-        const deviation = -.05 + Math.random() * 0.15; 
-        this.wiggleSpeed = this.targetSpeed >= 2 ? .3 + deviation: .7 + deviation;
+        }   
+        const deviation = randomRange(-.05, .1); 
+        this.wiggleSpeed = this.targetSpeed >= 2 ? .4 + deviation: .7 + deviation;
     }
 
     checkForFood() {
@@ -334,9 +336,9 @@ export class Enemy extends FishParent {
         super();
         this.x = x;
         this.y = y;  
-        this.acceleration = .04;
+        this.acceleration = .04;6
         this.deceleration = .03;
-        this.xScale = .18 + Math.random() * .1;
+        this.xScale = randomRange(.18, .28);
         this.yScale = this.xScale;
 
         this.sprite = new Image();
@@ -347,14 +349,14 @@ export class Enemy extends FishParent {
         }
 
         this.timer = {
-            changePath: 1 + Math.random() * 2,
+            changePath: randomRange(1, 3),
             checkForFish: 1,
             canPerformAction: -1,
         };        
       
         this.changeState(Fish.states.IDLING);
 
-        const time = Math.round(10 + Math.random() * 15);
+        const time = Math.round(randomRange(10, 15));
         setTimeout(() => {
             this.changeState(Fish.states.FLEEING);
             this.target.x = choose(-100, 100);
@@ -418,11 +420,13 @@ export class Enemy extends FishParent {
                     const index = fishes.indexOf(this.target.obj);
                     removeFish(index);
                     this.changeState(Fish.states.IDLING);
+                    spawnBubbles(this.x, this.y, randomRange(2, 4));
 
                     this.canPerformAction = false;
                     this.timer["canPerformAction"] = Fish.actionCooldown;
                 }
                 break;
+
             case Fish.states.FLEEING: 
                 this.targetAngle = this.pointTowards(this.target.x, this.target.y);  
                 this.angle = smoothRotation(this.angle, this.targetAngle, Fish.rotationSpeed1 * deltaTime);
@@ -443,7 +447,7 @@ export class Enemy extends FishParent {
             case Fish.states.EATING: this.targetSpeed = .2; break; 
             case Fish.states.FLEEING: this.targetSpeed = 3 + Math.random(); break; 
         }
-        const deviation = -.05 + Math.random() * 0.15; 
+        const deviation = randomRange(-.05, .1); 
         this.wiggleSpeed = this.targetSpeed >= 2 ? .3 + deviation: .7 + deviation;
     }
 
@@ -459,25 +463,9 @@ export class Enemy extends FishParent {
     }
 }
 
-function degToRad(degrees) {
-    return degrees * (Math.PI / 180);
-}
-
-function radToDeg(rad) {
-    return rad / (Math.PI / 180);
-}
-
 function smoothRotation(angle, targetAngle, rSpeed) {
     const diff = targetAngle - angle;
     angle += Math.min(Math.abs(diff), rSpeed) * Math.sin(diff);
     return angle;	
 }
 
-function animationWave(range, duration) {
-    const a4 = (range - -range) * 0.5;
-    return(-range + a4 + Math.sin((((Date.now() / 1000) + duration) / duration) * (Math.PI*2)) * a4);
-}
-
-function angleDifference(a, b) {
-    return Math.abs(b - a);
-}

@@ -1,5 +1,7 @@
 import { Fish, Enemy } from "./Fish.js";
 import Food from "./Food.js";
+import { choose, randomRange } from "./misc.js";
+import { ParticleSystem, ParticleEmitter, Particle } from "./ParticleSystem.js";
 
 const canvas = document.querySelector("#game-screen");
 const ctx = canvas.getContext("2d");
@@ -18,12 +20,18 @@ spawnFish(20);
 export const enemies = [];
 export const foods = [];
 
-let mouseX = 0; 
-let mouseY = 0;
-canvas.addEventListener("mousemove", e => {
-    mouseX = e.clientX;
-    mouseY = e.clientY;
-});
+const partSystem = new ParticleSystem();
+const partEmitter = new ParticleEmitter(partSystem);
+const partEmitter2 = new ParticleEmitter(partSystem);
+
+const partBubbles = new Particle();
+const partBubbles2 = new Particle();
+const spr = new Image();
+spr.src = "./src/assets/ring.png";
+partBubbles.setSprite(spr);
+partBubbles2.setSprite(spr);
+partBubbles2.setScale(2, 2);
+
 
 const targetFrameRate = 60;
 let lastTime = 0;
@@ -61,11 +69,15 @@ function gameLoop(timestamp) {
     ctx.fillStyle = backgroundColor;
     ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
+    partSystem.draw(ctx);
+    partSystem.update(deltaTime);
+
     fps = Math.round(1 / secondsPassed);
     ctx.font = "20px Sans-Serif";
     ctx.fillStyle = "black";
     ctx.fillText("FPS: " + fps, 10, 30);
 }
+
 window.requestAnimationFrame(gameLoop);
 
 function spawnFish(amount) {
@@ -105,10 +117,30 @@ export function removeEnemy(index) {
     enemies.splice(index, 1);
 }
 
+export function spawnBubbles(x, y, amount) {
+    const area = 20;
+    partEmitter.setRegion(x-area, x+(area*2), y-area, y+(area*2));
+    partEmitter.burst(partBubbles, amount);
+}
+
 //Set global fish target x & y once in a while to create an illusion that they swim together
 setInterval(() => {
     schoolFish();
 }, 5000)
+
+setInterval(() => {
+    const i = Math.floor(Math.random() * (fishes.length-1));
+    const amount = randomRange(1, 4);
+    spawnBubbles(fishes[i].x, fishes[i].y, amount);
+}, 2000)
+
+setInterval(() => {
+    const x = Math.random() * GAME_WIDTH;
+    const y = GAME_HEIGHT + 40;
+    const amount = randomRange(4, 8);
+    partEmitter2.setRegion(x, x, y, y);
+    partEmitter2.burst(partBubbles2, amount);
+}, 7000)
 
 function schoolFish() {
     const x = Math.random() * GAME_WIDTH;
@@ -121,29 +153,7 @@ function schoolFish() {
     });   
 }
 
-export function getMouseX() {
-    return mouseX;
-}
 
-export function getMouseY() {
-    return mouseY;
-}
-
-export function lerp(n1, n2, t) {
-    return (1 - t) * n1 + t * n2;
-}
-
-export function clamp(n, min, max) {
-    return Math.max(min, Math.min(n, max));
-}
-
-export function choose(a, b) {
-    if (Math.random() >= .5) {
-        return a;
-    } else {
-        return b;
-    }
-}
 
 //Handle input events
 canvas.addEventListener("mousedown", e => {
