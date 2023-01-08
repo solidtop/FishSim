@@ -1,4 +1,4 @@
-import { GAME_WIDTH, GAME_HEIGHT } from "./main.js";
+import { GAME_HEIGHT, foods } from "./main.js";
 
 export default class Food {
     constructor(x, y) {
@@ -23,6 +23,11 @@ export default class Food {
 
         if (this.speed > 0.5) {
             this.speed -= this.deceleration * deltaTime;
+        }
+
+        if (this.isOutsideRoom()) {
+            const index = foods.indexOf(this);
+            foods.splice(index, 1);
         }
     }
 

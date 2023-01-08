@@ -1,4 +1,3 @@
-import { GAME_WIDTH, GAME_HEIGHT } from "./main.js";
 import { randomRange, degToRad, animationWave } from "./misc.js";
 
 export class ParticleSystem {
@@ -37,7 +36,6 @@ export class ParticleSystem {
             ctx.restore(); 
         });
     }
-
 
     update(deltaTime) {
         this.particles.forEach(particle => {

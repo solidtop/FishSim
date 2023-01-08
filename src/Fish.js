@@ -1,4 +1,4 @@
-import { GAME_WIDTH, GAME_HEIGHT, removeFish, removeEnemy, foods, fishes, enemies, spawnBubbles, } from "./main.js";
+import { GAME_WIDTH, GAME_HEIGHT, removeFish, removeEnemy, foods, fishes, enemies, corpses, spawnBubbles, } from "./main.js";
 import { getMouseX, getMouseY, degToRad, lerp, choose, clamp, randomRange, animationWave } from "./misc.js";
 
 class FishParent {
@@ -12,6 +12,8 @@ class FishParent {
         AVOIDING: 5,
         FIGHTING: 6,
         FLEEING: 7,
+        KILLING: 8,
+        DYING: 9,
     }
 
     static rotationSpeed1 = .05;
@@ -40,6 +42,7 @@ class FishParent {
             x: 0,
             y: 0,
             obj: null,
+            arrivalState: Fish.states.IDLING,
         };
         this.performingAction = false;
         this.canPerformAction = true;
@@ -94,6 +97,8 @@ class FishParent {
             case Fish.states.EATING: return "Eating";
             case Fish.states.FIGHTING: return "Fighting";
             case Fish.states.FLEEING: return "Fleeing";
+            case Fish.states.KILLING: return "Killing";
+            case Fish.states.DYING: return "Dying";
         }
     }
 
@@ -122,7 +127,7 @@ class FishParent {
     }
 
     rattle() {
-        this.angle += animationWave(.01, .3);
+        this.wiggleAngle = animationWave(.2, .1);
     }
 
     isOutsideRoom() {
@@ -264,7 +269,8 @@ export class Fish extends FishParent {
                 }
                 this.target.x = target.x;
                 this.target.y = target.y;
-                this.targetAngle = this.pointTowards(this.target.x, this.target.y);  
+                this.targetAngle = this.pointTowards(this.target.x, this.target.y);
+
                 this.angle = smoothRotation(this.angle, this.targetAngle, Fish.rotationSpeed3 * deltaTime);
                 
                 const distanceToTarget = this.distanceToPoint(target.x, target.y);
@@ -287,6 +293,14 @@ export class Fish extends FishParent {
                     this.canPerformAction = false;
                     this.timer["canPerformAction"] = Fish.actionCooldown;
                 }
+                break;
+
+            case Fish.states.DYING:
+                const corpse = new FishCorpse(this.x, this.y, this.xScale, this.yScale, this.angle);
+                corpses.push(corpse);
+
+                const index = fishes.indexOf(this);
+                removeFish(index);
                 break;
         } 
     }
@@ -331,39 +345,23 @@ export class Fish extends FishParent {
     }
 }
 
-export class Enemy extends FishParent {
-    constructor(x, y) {
+class EnemyParent extends FishParent {
+    constructor() {
         super();
-        this.x = x;
-        this.y = y;  
-        this.acceleration = .04;6
-        this.deceleration = .03;
-        this.xScale = randomRange(.18, .28);
-        this.yScale = this.xScale;
-
-        this.sprite = new Image();
-        this.sprite.src = "./src/assets/enemyfish.png";
-        this.sprite.onload = () => {
-            this.width = this.sprite.naturalWidth * this.xScale;
-            this.height = this.sprite.naturalHeight * this.yScale;
-        }
-
+   
         this.timer = {
             changePath: randomRange(1, 3),
             checkForFish: 1,
             canPerformAction: -1,
         };        
       
-        this.changeState(Fish.states.IDLING);
-
         const time = randomRange(10, 15);
         setTimeout(() => {
             this.changeState(Fish.states.FLEEING);
-            this.target.x = choose(-100, 100);
+            this.target.x = choose(-100, GAME_WIDTH + 100);
             this.target.y = Math.random() * GAME_HEIGHT;
             this.performingAction = true;
         }, time * 1000);
-        
     }    
 
     handleStates(deltaTime) {
@@ -390,7 +388,6 @@ export class Enemy extends FishParent {
                     this.target.x = Math.random() * GAME_WIDTH;
                     this.target.y = Math.random() * GAME_HEIGHT;
                     this.timer["changePath"] = 1 + Math.random() * 3;
-
                 }
                 break;
 
@@ -404,11 +401,12 @@ export class Enemy extends FishParent {
                 this.targetAngle = this.pointTowards(this.target.x, this.target.y);  
                 this.angle = smoothRotation(this.angle, this.targetAngle, Fish.rotationSpeed3 * deltaTime);
                 
+                
                 const distanceToTarget = this.distanceToPoint(target.x, target.y);
                 if (distanceToTarget < Fish.eatingDistance + 5) {
                     this.rattle();
                     if (distanceToTarget <= Fish.eatingDistance) {
-                        this.changeState(Fish.states.EATING);
+                        this.changeState(this.target.arrivalState);
                     } 
                 } else if (distanceToTarget > 500) {
                     this.changeState(Fish.states.IDLING);
@@ -419,6 +417,19 @@ export class Enemy extends FishParent {
                 if (this.canPerformAction) {
                     const index = fishes.indexOf(this.target.obj);
                     removeFish(index);
+                    this.changeState(Fish.states.IDLING);
+                    spawnBubbles(this.x, this.y, randomRange(2, 4));
+
+                    this.canPerformAction = false;
+                    this.timer["canPerformAction"] = Fish.actionCooldown;
+                }
+                break;
+
+            case Fish.states.KILLING: 
+                if (this.canPerformAction) {
+                    const target = this.target.obj;
+                    target.changeState(Fish.states.DYING);
+
                     this.changeState(Fish.states.IDLING);
                     spawnBubbles(this.x, this.y, randomRange(2, 4));
 
@@ -445,11 +456,33 @@ export class Enemy extends FishParent {
             case Fish.states.RESTING: this.targetSpeed = .2; break;  
             case Fish.states.MOVING_TO_TARGET: this.targetSpeed = 3; break;
             case Fish.states.EATING: this.targetSpeed = .2; break; 
+            case Fish.states.KILLING: this.targetSpeed = .2; break; 
             case Fish.states.FLEEING: this.targetSpeed = 3 + Math.random(); break; 
         }
         const deviation = randomRange(-.05, .1); 
         this.wiggleSpeed = this.targetSpeed >= 2 ? .3 + deviation: .7 + deviation;
     }
+}
+
+export class Enemy1 extends EnemyParent {
+    constructor(x, y) {
+        super();
+        this.x = x;
+        this.y = y;  
+        this.acceleration = .04;6
+        this.deceleration = .03;
+        this.xScale = randomRange(.18, .2);
+        this.yScale = this.xScale;
+
+        this.sprite = new Image();
+        this.sprite.src = "./src/assets/enemyfish.png";
+        this.sprite.onload = () => {
+            this.width = this.sprite.naturalWidth * this.xScale;
+            this.height = this.sprite.naturalHeight * this.yScale;
+        }
+
+        this.changeState(Fish.states.IDLING);
+    }    
 
     checkForFish() {
         if (fishes.length <= 0 || !this.canPerformAction || this.performingAction) return;
@@ -457,8 +490,78 @@ export class Enemy extends FishParent {
 
         if (this.distanceToPoint(nearest.x, nearest.y) <= 500) {
             this.target.obj = nearest;
+            this.target.arrivalState = Fish.states.KILLING;
             this.changeState(Fish.states.MOVING_TO_TARGET);
             this.performingAction = true;
+        }
+    }
+}
+
+export class Enemy2 extends EnemyParent {
+    constructor(x, y) {
+        super();
+        this.x = x;
+        this.y = y;  
+        this.acceleration = .04;
+        this.deceleration = .03;
+        this.xScale = randomRange(.25, .3);
+        this.yScale = this.xScale;
+
+        this.sprite = new Image();
+        this.sprite.src = "./src/assets/enemyfish2.png";
+        this.sprite.onload = () => {
+            this.width = this.sprite.naturalWidth * this.xScale;
+            this.height = this.sprite.naturalHeight * this.yScale;
+        }
+
+        this.changeState(Fish.states.IDLING);
+    }    
+
+    checkForFish() {
+        if (fishes.length <= 0 || !this.canPerformAction || this.performingAction) return;
+        const nearest = this.nearestInstance(fishes); 
+
+        if (this.distanceToPoint(nearest.x, nearest.y) <= 500) {
+            this.target.obj = nearest;
+            this.target.arrivalState = Fish.states.EATING;
+            this.changeState(Fish.states.MOVING_TO_TARGET);
+            this.performingAction = true;
+        }
+    }
+}
+
+class FishCorpse {
+    constructor(x, y, xScale, yScale, angle) {
+        this.x = x;
+        this.y = y;
+        this.xScale = xScale;
+        this.yScale = yScale;
+        this.angle = angle;
+        this.targetAngle = -90;
+        this.riseSpeed = 0.3;
+
+        this.sprite = new Image();
+        this.sprite.src = "./src/assets/corpse.png";
+        this.sprite.onload = () => {
+            this.width = this.sprite.naturalWidth * this.xScale;
+            this.height = this.sprite.naturalHeight * this.yScale;
+        }
+    } 
+
+    draw(ctx) {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.angle + animationWave(.2, 2));
+        ctx.drawImage(this.sprite, -this.width/2, -this.height/2, this.width, this.height);
+        ctx.restore(); 
+    }
+
+    update(deltaTime) {
+        this.y -= this.riseSpeed * deltaTime;
+
+        if (this.y < -this.height) {
+            const index = corpses.indexOf(this);
+            corpses.splice(index, 1);
         }
     }
 }

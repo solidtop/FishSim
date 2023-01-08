@@ -1,4 +1,4 @@
-import { Fish, Enemy } from "./Fish.js";
+import  { Fish, Enemy1, Enemy2 } from "./Fish.js";
 import Food from "./Food.js";
 import { choose, randomRange } from "./misc.js";
 import { ParticleSystem, ParticleEmitter, Particle } from "./ParticleSystem.js";
@@ -18,6 +18,7 @@ export const fishes = [];
 spawnFish(20);
 
 export const enemies = [];
+export const corpses = [];
 export const foods = [];
 
 const partSystem = new ParticleSystem();
@@ -54,6 +55,11 @@ function gameLoop(timestamp) {
     enemies.forEach(enemy => {
         enemy.update(deltaTime);
         enemy.draw(ctx);
+    });
+
+    corpses.forEach(corpse => {
+        corpse.update(deltaTime);
+        corpse.draw(ctx);
     });
 
     foods.forEach((food, i) => {
@@ -109,7 +115,12 @@ function spawnEnemy(amount) {
     for (let i = 0; i < amount; i++) {
         const x = margin + (Math.random() * GAME_WIDTH - margin*2);
         const y = choose(-margin, GAME_HEIGHT + margin);
-        enemies.push(new Enemy(x, y));     
+        
+        if (Math.random() < .8) {
+            enemies.push(new Enemy1(x, y));     
+        } else {
+            enemies.push(new Enemy2(x, y));     
+        }
     }   
 }
 
@@ -129,9 +140,11 @@ setInterval(() => {
 }, 5000)
 
 setInterval(() => {
-    const i = Math.floor(Math.random() * (fishes.length-1));
-    const amount = randomRange(1, 4);
-    spawnBubbles(fishes[i].x, fishes[i].y, amount);
+    if (fishes.length > 0) {
+        const i = Math.floor(Math.random() * (fishes.length-1));
+        const amount = randomRange(1, 4);
+        spawnBubbles(fishes[i].x, fishes[i].y, amount);
+    }
 }, 2000)
 
 setInterval(() => {
