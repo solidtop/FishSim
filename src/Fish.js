@@ -296,7 +296,7 @@ export class Fish extends FishParent {
                 break;
 
             case Fish.states.DYING:
-                const corpse = new FishCorpse(this.x, this.y, this.xScale, this.yScale, this.angle);
+                const corpse = new FishCorpse(this.x, this.y, this.speed, this.xScale, this.yScale, this.angle);
                 corpses.push(corpse);
 
                 const index = fishes.indexOf(this);
@@ -418,7 +418,7 @@ class EnemyParent extends FishParent {
                     const index = fishes.indexOf(this.target.obj);
                     removeFish(index);
                     this.changeState(Fish.states.IDLING);
-                    spawnBubbles(this.x, this.y, randomRange(2, 4));
+                    spawnBubbles(this.x, this.y, randomRange(4, 8));
 
                     this.canPerformAction = false;
                     this.timer["canPerformAction"] = Fish.actionCooldown;
@@ -431,7 +431,7 @@ class EnemyParent extends FishParent {
                     target.changeState(Fish.states.DYING);
 
                     this.changeState(Fish.states.IDLING);
-                    spawnBubbles(this.x, this.y, randomRange(2, 4));
+                    spawnBubbles(this.x, this.y, randomRange(4, 8));
 
                     this.canPerformAction = false;
                     this.timer["canPerformAction"] = Fish.actionCooldown;
@@ -531,9 +531,10 @@ export class Enemy2 extends EnemyParent {
 }
 
 class FishCorpse {
-    constructor(x, y, xScale, yScale, angle) {
+    constructor(x, y, speed, xScale, yScale, angle) {
         this.x = x;
         this.y = y;
+        this.speed = speed;
         this.xScale = xScale;
         this.yScale = yScale;
         this.angle = angle;
@@ -557,6 +558,14 @@ class FishCorpse {
     }
 
     update(deltaTime) {
+        if (this.speed > 0) {
+            this.speed -= 0.01 * deltaTime;
+
+            const direction = this.angle + degToRad(90);
+            this.x += this.speed * deltaTime * Math.sin(direction);
+            this.y -= this.speed * deltaTime * Math.cos(direction);
+        } 
+
         this.y -= this.riseSpeed * deltaTime;
 
         if (this.y < -this.height) {
