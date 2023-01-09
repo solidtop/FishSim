@@ -24,6 +24,7 @@ export const foods = [];
 const partSystem = new ParticleSystem();
 const partEmitter = new ParticleEmitter(partSystem);
 const partEmitter2 = new ParticleEmitter(partSystem);
+const partEmitter3 = new ParticleEmitter(partSystem);
 
 const partBubbles = new Particle();
 const partBubbles2 = new Particle();
@@ -32,6 +33,20 @@ spr.src = "./src/assets/ring.png";
 partBubbles.setSprite(spr);
 partBubbles2.setSprite(spr);
 partBubbles2.setScale(2, 2);
+
+
+const partPollen = new Particle();
+partPollen.setSize(2, 4, 0, 0);
+partPollen.setColor("white");
+partPollen.setAlpha2(0, .1, 0);
+partPollen.setSpeed(.06, .1, 0, 0);
+partPollen.setDirection(0, 359, 0, 0);
+partPollen.setGravity(0, 270);
+partPollen.setOrientation(0, 359, 0, 0, 0);
+partPollen.setLife(200, 400);
+
+partEmitter3.setRegion(0, GAME_WIDTH, 0, GAME_HEIGHT);
+partEmitter3.stream(partPollen, 4);
 
 
 const targetFrameRate = 60;

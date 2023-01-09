@@ -31,7 +31,7 @@ export class ParticleSystem {
             if (type.sprite !== null) {
                 ctx.drawImage(type.sprite, 0, 0, particle.size, particle.size);
             } else {
-                ctx.fillRect(0, 0, size, size);
+                ctx.fillRect(0, 0, particle.size, particle.size);
             }
             ctx.restore(); 
         });
@@ -43,6 +43,11 @@ export class ParticleSystem {
 
             if (particle.life > 0) {
                 particle.life -= 1 * deltaTime;
+
+                if (particle.alpha < type.alpha2) {
+                    particle.alpha += particle.fadeSpd * deltaTime;
+                    particle.alpha = Math.min(particle.alpha, type.alpha2);
+                }
 
             } else if (particle.alpha > 0) { 
                 particle.alpha -= particle.fadeSpd * deltaTime;
@@ -85,7 +90,7 @@ export class ParticleSystem {
             dir: randomRange(type.dirMin, type.dirMax),
             angle: randomRange(type.angMin, type.angMax),
             life: life,
-            fadeSpd: type.alpha1 / life,
+            fadeSpd: type.alpha2 / life,
             wiggleOffset: randomRange(-.1, .1),
         });
     }
@@ -100,6 +105,7 @@ export class ParticleEmitter {
     constructor(ps) {
         this.ps = ps;
         this.setRegion(0, 0, 0, 0);
+        this.interval = null;
     }
 
     setRegion(x1, x2, y1, y2) {
@@ -109,8 +115,14 @@ export class ParticleEmitter {
         this.y1 = y1;
     }
 
-    stream(amount) {
-
+    stream(particle, amount) {
+        this.interval = setInterval(() => {
+            for (let i = 0; i < amount; i++) {
+                const x = randomRange(this.x1, this.x2);
+                const y = randomRange(this.y1, this.y2);
+                this.ps.addParticle(particle, x, y);  
+            }
+        }, 100);
     }
 
     burst(particle, amount) {
@@ -121,6 +133,11 @@ export class ParticleEmitter {
         }
     }
 
+    clear() {
+        if (!this.interval) return;
+
+        clearInterval(this.interval);
+    }
 }
 
 export class Particle {
@@ -155,7 +172,14 @@ export class Particle {
 
     setAlpha(alpha1, alpha2) {
         this.alpha1 = alpha1;
+        this.alpha2 = alpha1;
+        this.alpha3 = alpha2;
+    }
+
+    setAlpha2(alpha1, alpha2, alpha3) {
+        this.alpha1 = alpha1;
         this.alpha2 = alpha2;
+        this.alpha3 = alpha3;
     }
 
     setSpeed(speedMin, speedMax, speedIncr, speedWiggle) {
