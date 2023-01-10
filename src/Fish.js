@@ -75,10 +75,10 @@ class FishParent {
             this.handleStates(deltaTime);
         }
 
-        this.direction = this.angle + degToRad(90); 
+        this.direction = this.angle; 
 
-        this.x += this.speed * deltaTime * Math.sin(this.direction);
-        this.y -= this.speed * deltaTime * Math.cos(this.direction);
+        this.x += this.speed * deltaTime * Math.cos(this.direction);
+        this.y += this.speed * deltaTime * Math.sin(this.direction);
     }
 
     changeState(state) {
@@ -568,11 +568,10 @@ class FishCorpse {
 
     update(deltaTime) {
         if (this.speed > 0) {
-            this.speed -= 0.01 * deltaTime;
+            this.speed -= 0.02 * deltaTime;
 
-            const direction = this.angle + degToRad(90);
-            this.x += this.speed * deltaTime * Math.sin(direction);
-            this.y -= this.speed * deltaTime * Math.cos(direction);
+            this.x += this.speed * deltaTime * Math.cos(this.angle);
+            this.y += this.speed * deltaTime * Math.sin(this.angle);
         } 
 
         this.y -= this.riseSpeed * deltaTime;

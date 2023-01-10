@@ -154,13 +154,17 @@ setInterval(() => {
     schoolFish();
 }, 5000)
 
+//Spawn bubbles from fish
 setInterval(() => {
     if (fishes.length > 0) {
-        const i = Math.floor(Math.random() * (fishes.length-1));
-        const amount = randomRange(1, 4);
-        spawnBubbles(fishes[i].x, fishes[i].y, amount);
+        const times = Math.min(randomRange(1, 3), fishes.length);
+        for (let i = 0; i < times; i++) {
+            const index = Math.floor(Math.random() * (fishes.length-1));
+            const amount = randomRange(1, 4);
+            spawnBubbles(fishes[index].x, fishes[index].y, amount);
+        }
     }
-}, 2000)
+}, 2000);
 
 setInterval(() => {
     const x = Math.random() * GAME_WIDTH;
@@ -168,7 +172,7 @@ setInterval(() => {
     const amount = randomRange(4, 8);
     partEmitter2.setRegion(x, x, y, y);
     partEmitter2.burst(partBubbles2, amount);
-}, 7000)
+}, 7000);
 
 function schoolFish() {
     const x = Math.random() * GAME_WIDTH;
