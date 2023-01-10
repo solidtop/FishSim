@@ -15,7 +15,7 @@ backgroundColor.addColorStop(1, "rgb(0, 95, 170, .8)");
 canvas.oncontextmenu = e => { e.preventDefault(); e.stopPropagation(); }
 
 export const fishes = [];
-spawnFish(20);
+spawnFish(50);
 
 export const enemies = [];
 export const corpses = [];
@@ -62,16 +62,6 @@ function gameLoop(timestamp) {
 
     ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
-    fishes.forEach(fish => {
-        fish.update(deltaTime);
-        fish.draw(ctx);
-    });
-    
-    enemies.forEach(enemy => {
-        enemy.update(deltaTime);
-        enemy.draw(ctx);
-    });
-
     corpses.forEach(corpse => {
         corpse.update(deltaTime);
         corpse.draw(ctx);
@@ -85,6 +75,16 @@ function gameLoop(timestamp) {
             console.log("removed")
             foods.splice(i, 1);
         }
+    });
+
+    fishes.forEach(fish => {
+        fish.update(deltaTime);
+        fish.draw(ctx);
+    });
+    
+    enemies.forEach(enemy => {
+        enemy.update(deltaTime);
+        enemy.draw(ctx);
     });
 
     ctx.fillStyle = backgroundColor;

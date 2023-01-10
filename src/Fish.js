@@ -36,6 +36,7 @@ class FishParent {
         this.angle = Math.random() * 360;
         this.targetAngle = this.angle;
         this.facing = 1;
+        this.isTargeted = false;
         
         this.state = Fish.states.IDLING;
         this.target = {
@@ -278,7 +279,7 @@ export class Fish extends FishParent {
                     this.rattle();
 
                     if (distanceToTarget <= Fish.eatingDistance) {
-                        this.changeState(Fish.states.EATING);
+                        this.changeState(this.target.arrivalState);
                     } 
                 }
                 break;
@@ -325,6 +326,7 @@ export class Fish extends FishParent {
 
         if (this.distanceToPoint(nearest.x, nearest.y) <= 600) {
             this.target.obj = nearest;
+            this.target.arrivalState = Fish.states.EATING;
             this.changeState(Fish.states.MOVING_TO_TARGET);
             this.performingAction = true;
         }
@@ -361,6 +363,9 @@ class EnemyParent extends FishParent {
             this.target.x = choose(-100, GAME_WIDTH + 100);
             this.target.y = Math.random() * GAME_HEIGHT;
             this.performingAction = true;
+            if (this.target.obj !== null) {
+                this.target.obj.isTargeted = false;
+            }
         }, time * 1000);
     }    
 
@@ -409,6 +414,7 @@ class EnemyParent extends FishParent {
                         this.changeState(this.target.arrivalState);
                     } 
                 } else if (distanceToTarget > 500) {
+                    target.isTargeted = false;
                     this.changeState(Fish.states.IDLING);
                 }
                 break;
@@ -418,7 +424,7 @@ class EnemyParent extends FishParent {
                     const index = fishes.indexOf(this.target.obj);
                     removeFish(index);
                     this.changeState(Fish.states.IDLING);
-                    spawnBubbles(this.x, this.y, randomRange(4, 8));
+                    spawnBubbles(this.x, this.y, randomRange(8, 16));
 
                     this.canPerformAction = false;
                     this.timer["canPerformAction"] = Fish.actionCooldown;
@@ -431,7 +437,7 @@ class EnemyParent extends FishParent {
                     target.changeState(Fish.states.DYING);
 
                     this.changeState(Fish.states.IDLING);
-                    spawnBubbles(this.x, this.y, randomRange(4, 8));
+                    spawnBubbles(target.x, target.y, randomRange(8, 16));
 
                     this.canPerformAction = false;
                     this.timer["canPerformAction"] = Fish.actionCooldown;
@@ -487,8 +493,10 @@ export class Enemy1 extends EnemyParent {
     checkForFish() {
         if (fishes.length <= 0 || !this.canPerformAction || this.performingAction) return;
         const nearest = this.nearestInstance(fishes); 
+        if (nearest.isTargeted) return;
 
         if (this.distanceToPoint(nearest.x, nearest.y) <= 500) {
+            nearest.isTargeted = true;
             this.target.obj = nearest;
             this.target.arrivalState = Fish.states.KILLING;
             this.changeState(Fish.states.MOVING_TO_TARGET);
@@ -520,6 +528,7 @@ export class Enemy2 extends EnemyParent {
     checkForFish() {
         if (fishes.length <= 0 || !this.canPerformAction || this.performingAction) return;
         const nearest = this.nearestInstance(fishes); 
+        if (nearest.isTargeted) return;
 
         if (this.distanceToPoint(nearest.x, nearest.y) <= 500) {
             this.target.obj = nearest;
