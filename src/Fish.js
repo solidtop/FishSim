@@ -1,5 +1,5 @@
-import { GAME_WIDTH, GAME_HEIGHT, removeFish, removeEnemy, foods, fishes, enemies, corpses, spawnBubbles, } from "./main.js";
-import { getMouseX, getMouseY, degToRad, lerp, choose, clamp, randomRange, animationWave } from "./misc.js";
+import { GAME_WIDTH, GAME_HEIGHT, removeFish, removeEnemy, foods, fishes, enemies, corpses, spawnBubbles, spawnCorpse } from "./main.js";
+import { getMouseX, getMouseY, degToRad, lerp, choose, randomRange, animationWave } from "./misc.js";
 
 class FishParent {
     static ID = 0;
@@ -165,22 +165,18 @@ class FishParent {
 
 
 export class Fish extends FishParent {
-    constructor(x, y) {
+    constructor(sprite, x, y) {
         super();
+        this.sprite = sprite;
         this.x = x;
         this.y = y;
         this.acceleration = .05;
         this.deceleration = .03; 
         this.xScale = randomRange(.15, .2);
         this.yScale = this.xScale;
-
-        this.sprite = new Image();
-        this.sprite.src = "./src/assets/fish.png";
-        this.sprite.onload = () => {
-            this.width = this.sprite.naturalWidth * this.xScale;
-            this.height = this.sprite.naturalHeight * this.yScale;
-        }
-      
+        this.width = sprite.naturalWidth * this.xScale;
+        this.height = sprite.naturalHeight * this.yScale;
+       
         this.timer = {
             changePath: randomRange(1, 3),
             resting: randomRange(5, 35),
@@ -297,8 +293,7 @@ export class Fish extends FishParent {
                 break;
 
             case Fish.states.DYING:
-                const corpse = new FishCorpse(this.x, this.y, this.speed, this.xScale, this.yScale, this.angle);
-                corpses.push(corpse);
+                spawnCorpse(this.x, this.y, this.speed, this.xScale, this.yScale, this.angle);
 
                 const index = fishes.indexOf(this);
                 removeFish(index);
@@ -471,21 +466,17 @@ class EnemyParent extends FishParent {
 }
 
 export class Enemy1 extends EnemyParent {
-    constructor(x, y) {
+    constructor(sprite, x, y) {
         super();
+        this.sprite = sprite;
         this.x = x;
         this.y = y;  
-        this.acceleration = .04;6
+        this.acceleration = .04;
         this.deceleration = .03;
         this.xScale = randomRange(.18, .2);
         this.yScale = this.xScale;
-
-        this.sprite = new Image();
-        this.sprite.src = "./src/assets/enemyfish.png";
-        this.sprite.onload = () => {
-            this.width = this.sprite.naturalWidth * this.xScale;
-            this.height = this.sprite.naturalHeight * this.yScale;
-        }
+        this.width = sprite.naturalWidth * this.xScale;
+        this.height = sprite.naturalHeight * this.yScale;
 
         this.changeState(Fish.states.IDLING);
     }    
@@ -506,21 +497,17 @@ export class Enemy1 extends EnemyParent {
 }
 
 export class Enemy2 extends EnemyParent {
-    constructor(x, y) {
+    constructor(sprite, x, y) {
         super();
+        this.sprite = sprite;
         this.x = x;
         this.y = y;  
         this.acceleration = .04;
         this.deceleration = .03;
         this.xScale = randomRange(.25, .3);
         this.yScale = this.xScale;
-
-        this.sprite = new Image();
-        this.sprite.src = "./src/assets/enemyfish2.png";
-        this.sprite.onload = () => {
-            this.width = this.sprite.naturalWidth * this.xScale;
-            this.height = this.sprite.naturalHeight * this.yScale;
-        }
+        this.width = sprite.naturalWidth * this.xScale;
+        this.height = sprite.naturalHeight * this.yScale;
 
         this.changeState(Fish.states.IDLING);
     }    
@@ -539,23 +526,19 @@ export class Enemy2 extends EnemyParent {
     }
 }
 
-class FishCorpse {
-    constructor(x, y, speed, xScale, yScale, angle) {
+export class FishCorpse {
+    constructor(sprite, x, y, speed, xScale, yScale, angle) {
+        this.sprite = sprite;
         this.x = x;
         this.y = y;
         this.speed = speed;
         this.xScale = xScale;
         this.yScale = yScale;
+        this.width = sprite.naturalWidth * this.xScale;
+        this.height = sprite.naturalHeight * this.yScale;
         this.angle = angle;
         this.targetAngle = -90;
         this.riseSpeed = 0.3;
-
-        this.sprite = new Image();
-        this.sprite.src = "./src/assets/corpse.png";
-        this.sprite.onload = () => {
-            this.width = this.sprite.naturalWidth * this.xScale;
-            this.height = this.sprite.naturalHeight * this.yScale;
-        }
     } 
 
     draw(ctx) {

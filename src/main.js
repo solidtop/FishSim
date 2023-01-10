@@ -1,4 +1,4 @@
-import  { Fish, Enemy1, Enemy2 } from "./Fish.js";
+import  { Fish, Enemy1, Enemy2, FishCorpse } from "./Fish.js";
 import Food from "./Food.js";
 import { choose, randomRange, getMouseX, getMouseY } from "./misc.js";
 import { ParticleSystem, ParticleEmitter, Particle } from "./ParticleSystem.js";
@@ -15,11 +15,22 @@ backgroundColor.addColorStop(1, "rgb(0, 95, 170, .8)");
 canvas.oncontextmenu = e => { e.preventDefault(); e.stopPropagation(); }
 
 export const fishes = [];
-spawnFish(50);
-
 export const enemies = [];
 export const corpses = [];
 export const foods = [];
+
+const fishSprite = new Image();
+fishSprite.src = "./src/assets/fish.png";
+const enemy1Sprite = new Image();
+enemy1Sprite.src = "./src/assets/enemyfish.png";
+const enemy2Sprite = new Image();
+enemy2Sprite.src = "./src/assets/enemyfish2.png";
+const corpseSprite = new Image();
+corpseSprite.src = "./src/assets/corpse.png";
+
+fishSprite.onload = () => {
+    spawnFish(50);
+}
 
 const partSystem = new ParticleSystem();
 const partEmitter = new ParticleEmitter(partSystem);
@@ -99,14 +110,16 @@ function gameLoop(timestamp) {
     ctx.fillText("FPS: " + fps, 10, 30);
 }
 
+
 window.requestAnimationFrame(gameLoop);
+
 
 function spawnFish(amount) {
     const margin = 100;
     for (let i = 0; i < amount; i++) {
         const x = margin + (Math.random() * GAME_WIDTH - margin*2);
         const y = margin + (Math.random() * GAME_HEIGHT - margin*2);
-        fishes.push(new Fish(x, y));     
+        fishes.push(new Fish(fishSprite, x, y));     
     }
     displayFishAmount(fishes.length); 
 }
@@ -130,13 +143,18 @@ function spawnEnemy(amount) {
     for (let i = 0; i < amount; i++) {
         const x = margin + (Math.random() * GAME_WIDTH - margin*2);
         const y = choose(-margin, GAME_HEIGHT + margin);
-        
+
         if (Math.random() < .8) {
-            enemies.push(new Enemy1(x, y));     
+            enemies.push(new Enemy1(enemy1Sprite, x, y));     
         } else {
-            enemies.push(new Enemy2(x, y));     
+            enemies.push(new Enemy2(enemy2Sprite, x, y));     
         }
     }   
+}
+
+export function spawnCorpse(x, y, speed, xScale, yScale, angle) {
+    const corpse = new FishCorpse(corpseSprite, x, y, speed, xScale, yScale, angle);
+    corpses.push(corpse);
 }
 
 export function removeEnemy(index) {
@@ -228,6 +246,7 @@ document.querySelector("#btn-spawn-enemy").addEventListener("click", () => {
 function displayFishAmount(amount) {
     document.querySelector("#fish-display").textContent = "Fish Amount: " + amount;
 }
+
 
 
 
