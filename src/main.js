@@ -1,6 +1,6 @@
 import  { Fish, Enemy1, Enemy2 } from "./Fish.js";
 import Food from "./Food.js";
-import { choose, randomRange } from "./misc.js";
+import { choose, randomRange, getMouseX, getMouseY } from "./misc.js";
 import { ParticleSystem, ParticleEmitter, Particle } from "./ParticleSystem.js";
 
 const canvas = document.querySelector("#game-screen");
@@ -200,6 +200,7 @@ canvas.addEventListener("mousedown", e => {
                     y: getMouseY(),
                 };
             });
+            spawnBubbles(getMouseX(), getMouseY(), 20);
             break;
     }
 });
