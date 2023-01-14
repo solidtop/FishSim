@@ -29,9 +29,9 @@ export class ParticleSystem {
             ctx.globalAlpha = particle.alpha;
             ctx.fillStyle = type.color;
             if (type.sprite !== null) {
-                ctx.drawImage(type.sprite, 0, 0, particle.size, particle.size);
+                ctx.drawImage(type.sprite, 0, 0, size, size);
             } else {
-                ctx.fillRect(0, 0, particle.size, particle.size);
+                ctx.fillRect(0, 0, size, size);
             }
             ctx.restore(); 
         });

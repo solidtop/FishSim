@@ -1,6 +1,6 @@
 import  { Fish, Enemy1, Enemy2, FishCorpse } from "./Fish.js";
 import Food from "./Food.js";
-import { choose, randomRange, getMouseX, getMouseY } from "./misc.js";
+import { choose, randomRange, irandomRange, getMouseX, getMouseY } from "./misc.js";
 import { ParticleSystem, ParticleEmitter, Particle } from "./ParticleSystem.js";
 
 const canvas = document.querySelector("#game-screen");
@@ -19,6 +19,7 @@ export const enemies = [];
 export const corpses = [];
 export const foods = [];
 
+//Creating and Loading sprites 
 const fishSprite = new Image();
 fishSprite.src = "./src/assets/fish.png";
 const enemy1Sprite = new Image();
@@ -32,6 +33,7 @@ fishSprite.onload = () => {
     spawnFish(50);
 }
 
+//Initializing particle system
 const partSystem = new ParticleSystem();
 const partEmitter = new ParticleEmitter(partSystem);
 const partEmitter2 = new ParticleEmitter(partSystem);
@@ -60,6 +62,7 @@ partEmitter3.setRegion(0, GAME_WIDTH, 0, GAME_HEIGHT);
 partEmitter3.stream(partPollen, 4);
 
 
+//Gameloop 
 const targetFrameRate = 60;
 let lastTime = 0;
 let deltaTime = 0;
@@ -81,11 +84,6 @@ function gameLoop(timestamp) {
     foods.forEach((food, i) => {
         food.update(deltaTime);
         food.draw(ctx);
-
-        if (food.isOutsideRoom()) {
-            console.log("removed")
-            foods.splice(i, 1);
-        }
     });
 
     fishes.forEach(fish => {
@@ -167,40 +165,47 @@ export function spawnBubbles(x, y, amount) {
     partEmitter.burst(partBubbles, amount);
 }
 
-//Set global fish target x & y once in a while to create an illusion that they swim together
-setInterval(() => {
-    schoolFish();
-}, 5000)
+
+setTimeout(schoolFish, randomRange(3, 6) * 1000);
+setTimeout(spawnFishBubbles, randomRange(1, 3) * 1000);
+setTimeout(spawnBigBubbles, randomRange(5, 10) * 1000);
+
 
 //Spawn bubbles from fish
-setInterval(() => {
+function spawnFishBubbles() {
     if (fishes.length > 0) {
-        const times = Math.min(randomRange(1, 3), fishes.length);
+        const times = Math.min(irandomRange(1, 3), fishes.length);
         for (let i = 0; i < times; i++) {
             const index = Math.floor(Math.random() * (fishes.length-1));
             const amount = randomRange(1, 4);
             spawnBubbles(fishes[index].x, fishes[index].y, amount);
         }
-    }
-}, 2000);
+    }   
+    setTimeout(spawnFishBubbles, randomRange(1, 3) * 1000);
+}
 
-setInterval(() => {
+function spawnBigBubbles() {
     const x = Math.random() * GAME_WIDTH;
     const y = GAME_HEIGHT + 40;
     const amount = randomRange(4, 8);
     partEmitter2.setRegion(x, x, y, y);
-    partEmitter2.burst(partBubbles2, amount);
-}, 7000);
+    partEmitter2.burst(partBubbles2, amount);    
+
+    setTimeout(spawnBigBubbles, randomRange(5, 10) * 1000);
+}
 
 function schoolFish() {
-    const x = Math.random() * GAME_WIDTH;
+    const x = Math.random() * GAME_WIDTH; //Set global fish target x & y once in a while to create an illusion that they swim together
     const y = Math.random() * GAME_HEIGHT;
     fishes.forEach(fish => {
         if (fish.state === Fish.states.IDLING) {
             fish.target.x = x;
             fish.target.y = y;
+            fish.timer["changePath"] = randomRange(1, 4);
         }
     });   
+
+    setTimeout(schoolFish, randomRange(5, 8) * 1000);
 }
 
 

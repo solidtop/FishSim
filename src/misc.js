@@ -32,6 +32,12 @@ export function randomRange(a, b) {
     return Math.random() * (b - a) + a;
 }
 
+export function irandomRange(a, b) {
+    if (a === b) return a;
+
+    return Math.round(Math.random() * (b - a) + a);   
+}
+
 export function lerp(n1, n2, t) {
     return (1 - t) * n1 + t * n2;
 }
@@ -46,6 +52,10 @@ export function choose(a, b) {
     } else {
         return b;
     }
+}
+
+export function chance(perc) {
+    return Math.random() <= perc/100;
 }
 
 export function angleDifference(a, b) {

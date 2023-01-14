@@ -1,5 +1,5 @@
 import { GAME_WIDTH, GAME_HEIGHT, removeFish, removeEnemy, foods, fishes, enemies, corpses, spawnBubbles, spawnCorpse } from "./main.js";
-import { getMouseX, getMouseY, degToRad, lerp, choose, randomRange, animationWave } from "./misc.js";
+import { getMouseX, getMouseY, degToRad, lerp, choose, chance, randomRange, animationWave } from "./misc.js";
 
 class FishParent {
     static ID = 0;
@@ -24,6 +24,7 @@ class FishParent {
     static eatingDistance = 15;
 
     static actionCooldown = 1;
+    static chanceToFight = 10;
 
     constructor() {
         this.ID = Fish.ID++;
@@ -53,12 +54,20 @@ class FishParent {
         ctx.save();
         ctx.translate(this.x, this.y);
         ctx.rotate(this.angle + this.wiggleAngle);
-        ctx.scale(1, 1);
+        ctx.scale(1, 1 * this.facing);
         ctx.drawImage(this.sprite, -this.width/2, -this.height/2, this.width, this.height);
         ctx.restore(); 
+
+        //ctx.fillText("angle: " + this.targetAngle + this.facing, this.x, this.y);
     }
 
     update(deltaTime) {
+
+        /*if (this.angle > 90 && this.angle < 270) {
+			this.facing = -1;
+		} else {
+			this.facing = 1;	
+		}*/
 
         this.wiggleAngle = lerp(this.wiggleAngle, this.wiggle(), .3 * deltaTime); //Wiggle smoothing
 
@@ -182,6 +191,7 @@ export class Fish extends FishParent {
             resting: randomRange(5, 35),
             checkForFood: randomRange(.5, 2.5),
             checkForEnemies: 1,
+            checkForFight: randomRange(1, 50),
             canPerformAction: -1,
         };        
 
@@ -222,6 +232,11 @@ export class Fish extends FishParent {
                     this.changeState(Fish.states.RESTING);
                     this.timer["resting"] = randomRange(2, 4);
                 }
+                timerIsFinished = this.timerCountdown("checkForFight", deltaTime);
+                if (timerIsFinished) {
+                    this.checkForFight();
+                    this.timer["checkForFight"] = randomRange(10, 50);
+                }
                 break;
 
             case Fish.states.FOLLOWING:
@@ -261,15 +276,18 @@ export class Fish extends FishParent {
 
             case Fish.states.MOVING_TO_TARGET:
                 target = this.target.obj;
-                if (foods.indexOf(target) === -1) {
-                    this.changeState(Fish.states.IDLING);
-                }
                 this.target.x = target.x;
                 this.target.y = target.y;
                 this.targetAngle = this.pointTowards(this.target.x, this.target.y);
 
-                this.angle = smoothRotation(this.angle, this.targetAngle, Fish.rotationSpeed3 * deltaTime);
+                if (this.target.arrivalState === Fish.states.EATING) {
+                    if (foods.indexOf(target) === -1) {
+                        this.changeState(Fish.states.IDLING);
+                    }
+                } 
                 
+                this.angle = smoothRotation(this.angle, this.targetAngle, Fish.rotationSpeed3 * deltaTime);
+
                 const distanceToTarget = this.distanceToPoint(target.x, target.y);
                 if (distanceToTarget < Fish.eatingDistance + 10) {
                     this.rattle();
@@ -297,6 +315,20 @@ export class Fish extends FishParent {
 
                 const index = fishes.indexOf(this);
                 removeFish(index);
+                break;
+
+            case Fish.states.FIGHTING:
+                if (this.canPerformAction) {
+                    spawnBubbles(this.x, this.y, 2);
+                    this.canPerformAction = false;
+                    this.timer["canPerformAction"] = Fish.actionCooldown;
+
+                    if (chance(50)) {
+                        this.changeState(Fish.states.MOVING_TO_TARGET);
+                    } else {
+                        this.changeState(Fish.states.IDLING);
+                    }
+                }
                 break;
         } 
     }
@@ -335,6 +367,18 @@ export class Fish extends FishParent {
             this.changeState(Fish.states.AVOIDING);
             this.performingAction = true;
         }
+    }
+
+    checkForFight() {
+        if (fishes.length < 2 || !chance(Fish.chanceToFight)) return;
+
+        const index = Math.floor(Math.random() * (fishes.length-1));
+        const fishToFight = fishes[index];
+        if (fishToFight === this) return;			
+
+        this.changeState(Fish.states.MOVING_TO_TARGET);
+        this.target.obj = fishToFight;
+        this.target.arrivalState = Fish.states.FIGHTING;
     }
 
     isOutsideRadius() {
