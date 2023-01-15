@@ -42,8 +42,9 @@ const partEmitter3 = new ParticleEmitter(partSystem);
 const partBubbles = new Particle();
 const partBubbles2 = new Particle();
 const spr = new Image();
-spr.src = "./src/assets/ring.png";
+spr.src = "./src/assets/bubble.png";
 partBubbles.setSprite(spr);
+partBubbles2.setScale(.5, .5);
 partBubbles2.setSprite(spr);
 partBubbles2.setScale(2, 2);
 
@@ -61,7 +62,6 @@ partPollen.setLife(200, 400);
 partEmitter3.setRegion(0, GAME_WIDTH, 0, GAME_HEIGHT);
 partEmitter3.stream(partPollen, 4);
 
-
 //Gameloop 
 const targetFrameRate = 60;
 let lastTime = 0;
@@ -75,6 +75,9 @@ function gameLoop(timestamp) {
     lastTime = timestamp;
 
     ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+
+    ctx.fillStyle = backgroundColor;
+    //ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
     corpses.forEach(corpse => {
         corpse.update(deltaTime);
@@ -252,6 +255,20 @@ function displayFishAmount(amount) {
     document.querySelector("#fish-display").textContent = "Fish Amount: " + amount;
 }
 
+function loadSprites() {
+    const obj = {
+
+    }
+
+    const fishSprite = new Image();
+    fishSprite.src = "./src/assets/fish.png";
+    const enemy1Sprite = new Image();
+    enemy1Sprite.src = "./src/assets/enemyfish.png";
+    const enemy2Sprite = new Image();
+    enemy2Sprite.src = "./src/assets/enemyfish2.png";
+    const corpseSprite = new Image();
+    corpseSprite.src = "./src/assets/corpse.png";
+}
 
 
 

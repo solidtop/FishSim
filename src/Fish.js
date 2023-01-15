@@ -1,5 +1,5 @@
 import { GAME_WIDTH, GAME_HEIGHT, removeFish, removeEnemy, foods, fishes, enemies, corpses, spawnBubbles, spawnCorpse } from "./main.js";
-import { getMouseX, getMouseY, degToRad, lerp, choose, chance, randomRange, animationWave } from "./misc.js";
+import { getMouseX, getMouseY, degToRad, radToDeg, lerp, choose, chance, randomRange, animationWave } from "./misc.js";
 
 class FishParent {
     static ID = 0;
@@ -34,9 +34,10 @@ class FishParent {
         this.directionDeviation = randomRange(-10, 10);
         this.wiggleSpeed = 0;
         this.wiggleAngle = 0;
-        this.angle = Math.random() * 360;
+        this.angle = degToRad(Math.random() * 360);
         this.targetAngle = this.angle;
         this.facing = 1;
+        this.targetFacing =  this.facing;
         this.isTargeted = false;
         
         this.state = Fish.states.IDLING;
@@ -57,17 +58,9 @@ class FishParent {
         ctx.scale(1, 1 * this.facing);
         ctx.drawImage(this.sprite, -this.width/2, -this.height/2, this.width, this.height);
         ctx.restore(); 
-
-        //ctx.fillText("angle: " + this.targetAngle + this.facing, this.x, this.y);
     }
 
     update(deltaTime) {
-
-        /*if (this.angle > 90 && this.angle < 270) {
-			this.facing = -1;
-		} else {
-			this.facing = 1;	
-		}*/
 
         this.wiggleAngle = lerp(this.wiggleAngle, this.wiggle(), .3 * deltaTime); //Wiggle smoothing
 
@@ -93,7 +86,7 @@ class FishParent {
     changeState(state) {
         this.state = state;
         this.setStateSpeed(state);
-        console.log(`fish ${this.ID} is ${this.getStateName(state)}`);
+        //console.log(`fish ${this.ID} is ${this.getStateName(state)}`);
         this.performingAction = false; //Reset actions on state change
     }
 
@@ -128,7 +121,7 @@ class FishParent {
         return animationWave(.2, duration);
     }
 
-    rock(deltaTime) {
+    rock(deltaTime) { //TODO: fix problem with rockValue and overshooting angle value 
         const duration = 3;
         const rockValue = animationWave(.1, duration);
         this.targetAngle = this.angle + rockValue;
@@ -217,7 +210,7 @@ export class Fish extends FishParent {
         }
         switch(this.state) {
             case Fish.states.IDLING:
-                this.targetAngle = this.pointTowards(this.target.x, this.target.y);  
+                this.targetAngle = this.pointTowards(this.target.x, this.target.y); 
                 this.angle = smoothRotation(this.angle, this.targetAngle, Fish.rotationSpeed1 * deltaTime);
 
                 timerIsFinished = this.timerCountdown("changePath", deltaTime);
@@ -243,8 +236,8 @@ export class Fish extends FishParent {
                 if (this.isOutsideRadius()) {
                     this.target.x = getMouseX();
                     this.target.y = getMouseY();
-                    this.targetAngle = this.pointTowards(this.target.x, this.target.y);  
-                    this.angle = smoothRotation(this.angle, this.targetAngle + degToRad(this.directionDeviation), Fish.rotationSpeed2 * deltaTime);
+                    this.targetAngle = this.pointTowards(this.target.x, this.target.y) + degToRad(this.directionDeviation);  
+                    this.angle = smoothRotation(this.angle, this.targetAngle, Fish.rotationSpeed2 * deltaTime);
                 } 
                 break;
 
@@ -409,6 +402,14 @@ class EnemyParent extends FishParent {
     }    
 
     handleStates(deltaTime) {
+        const ang = radToDeg(this.angle);
+        if (ang > 130 && ang < 310) {
+			this.targetFacing = -1;
+		} else {
+			this.targetFacing = 1;	
+		}
+        this.facing = lerp(this.facing, this.targetFacing, .25 * deltaTime);
+
         let timerIsFinished;
 
         timerIsFinished = this.timerCountdown("checkForFish", deltaTime);
@@ -443,7 +444,7 @@ class EnemyParent extends FishParent {
                 this.target.x = target.x;
                 this.target.y = target.y;
                 this.targetAngle = this.pointTowards(this.target.x, this.target.y);  
-                this.angle = smoothRotation(this.angle, this.targetAngle, Fish.rotationSpeed3 * deltaTime);
+                this.angle = smoothRotation(this.angle, this.targetAngle, Fish.rotationSpeed2 * deltaTime);
                 
                 
                 const distanceToTarget = this.distanceToPoint(target.x, target.y);
@@ -548,7 +549,7 @@ export class Enemy2 extends EnemyParent {
         this.y = y;  
         this.acceleration = .04;
         this.deceleration = .03;
-        this.xScale = randomRange(.25, .3);
+        this.xScale = randomRange(.4, .6);
         this.yScale = this.xScale;
         this.width = sprite.naturalWidth * this.xScale;
         this.height = sprite.naturalHeight * this.yScale;
@@ -613,6 +614,11 @@ export class FishCorpse {
 function smoothRotation(angle, targetAngle, rSpeed) {
     const diff = targetAngle - angle;
     angle += Math.min(Math.abs(diff), rSpeed) * Math.sin(diff);
+    if (angle > degToRad(359)) {
+        angle =  0;
+    } else if (angle < 0) {
+        angle = degToRad(359);
+    }
     return angle;	
 }
 

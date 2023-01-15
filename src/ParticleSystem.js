@@ -1,4 +1,4 @@
-import { randomRange, degToRad, animationWave } from "./misc.js";
+import { randomRange, degToRad, animationWave, choose, choose2 } from "./misc.js";
 
 export class ParticleSystem {
 
@@ -146,7 +146,7 @@ export class Particle {
         this.setSize(6, 8, 0, 0);
         this.setScale(1, 1);
         this.setColor("black");
-        this.setAlpha(.2, 0);
+        this.setAlpha(.25, 0);
         this.setSpeed(0.8, 1.2, 0, 0);
         this.setDirection(-80, -100, 0, 30);
         this.setGravity(0.001, 90);

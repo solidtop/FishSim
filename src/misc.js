@@ -54,6 +54,16 @@ export function choose(a, b) {
     }
 }
 
+export function choose2(a, b, c) {
+    if (Math.random() >= .6666) {
+        return a;
+    } else if (Math.random() >= .3333) {
+        return b;
+    } else {
+        return c;
+    }
+}
+
 export function chance(perc) {
     return Math.random() <= perc/100;
 }
