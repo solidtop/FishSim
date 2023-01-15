@@ -121,7 +121,7 @@ class FishParent {
         return animationWave(.2, duration);
     }
 
-    rock(deltaTime) { //TODO: fix problem with rockValue and overshooting angle value 
+    rock(deltaTime) { 
         const duration = 3;
         const rockValue = animationWave(.1, duration);
         this.targetAngle = this.angle + rockValue;
