@@ -403,7 +403,7 @@ class EnemyParent extends FishParent {
         this.sndMovement = new Audio("./src/audio/underwater_movement.mp3");
         this.sndMovement.loop = false;
         this.sndMovement.playbackRate = randomRange(.8, 2);
-        this.sndMovement.volume = .2;
+        this.sndMovement.volume = .5;
     }    
 
     handleStates(deltaTime) {

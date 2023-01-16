@@ -178,9 +178,6 @@ function spawnFishBubbles() {
             const index = Math.floor(Math.random() * (fishes.length-1));
             const amount = randomRange(1, 4);
             spawnBubbles(fishes[index].x, fishes[index].y, amount);
-            
-            sndBubbleSingle.playbackRate = randomRange(.8, 1);
-            sndBubbleSingle.play();
         }
     }   
     setTimeout(spawnFishBubbles, randomRange(1, 3) * 1000);
@@ -193,9 +190,8 @@ function spawnBigBubbles() {
     partEmitter2.setRegion(x, x, y, y);
     partEmitter2.burst(partBubbles2, amount);    
     
-    const snd = choose(sndBubbleSingle, sndBubbles1);
-    snd.playbackRate = randomRange(.8, 1);
-    snd.play();
+    sndBubbles.playbackRate = randomRange(.8, 1);
+    sndBubbles.play();
 
     setTimeout(spawnBigBubbles, randomRange(10, 20) * 1000);
 }
@@ -262,15 +258,9 @@ function displayFishAmount(amount) {
 const sndAmbience = new Audio("./src/audio/underwater_ambience.mp3");
 sndAmbience.play();
 sndAmbience.loop = true;
-const sndBubbles1 = new Audio("./src/audio/bubbles1.mp3");
-const sndBubbles2 = new Audio("./src/audio/bubbles2.mp3");
-sndBubbles2.volume = .3;
-const sndBubbleSingle = new Audio("./src/audio/bubbles_single.mp3");
-
-sndBubbles1.mozPreservesPitch = false;
-sndBubbles2.mozPreservesPitch = false;
-sndBubbleSingle.mozPreservesPitch = false;
-sndBubbleSingle.volume = .1;
+const sndBubbles = new Audio("./src/audio/bubbles.mp3");
+sndBubbles.volume = .3;
+sndBubbles.mozPreservesPitch = false;
 
 
 
