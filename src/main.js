@@ -168,8 +168,7 @@ export function spawnBubbles(x, y, amount) {
 
 setTimeout(schoolFish, randomRange(3, 6) * 1000);
 setTimeout(spawnFishBubbles, randomRange(1, 3) * 1000);
-setTimeout(spawnBigBubbles, randomRange(5, 10) * 1000);
-
+setTimeout(spawnBigBubbles, randomRange(10, 20) * 1000);
 
 //Spawn bubbles from fish
 function spawnFishBubbles() {
@@ -179,6 +178,9 @@ function spawnFishBubbles() {
             const index = Math.floor(Math.random() * (fishes.length-1));
             const amount = randomRange(1, 4);
             spawnBubbles(fishes[index].x, fishes[index].y, amount);
+            
+            sndBubbleSingle.playbackRate = randomRange(.8, 1);
+            sndBubbleSingle.play();
         }
     }   
     setTimeout(spawnFishBubbles, randomRange(1, 3) * 1000);
@@ -190,8 +192,12 @@ function spawnBigBubbles() {
     const amount = randomRange(4, 8);
     partEmitter2.setRegion(x, x, y, y);
     partEmitter2.burst(partBubbles2, amount);    
+    
+    const snd = choose(sndBubbleSingle, sndBubbles1);
+    snd.playbackRate = randomRange(.8, 1);
+    snd.play();
 
-    setTimeout(spawnBigBubbles, randomRange(5, 10) * 1000);
+    setTimeout(spawnBigBubbles, randomRange(10, 20) * 1000);
 }
 
 function schoolFish() {
@@ -208,8 +214,6 @@ function schoolFish() {
     setTimeout(schoolFish, randomRange(5, 8) * 1000);
 }
 
-
-
 //Handle input events
 canvas.addEventListener("mousedown", e => {
     switch(e.which) {
@@ -217,6 +221,7 @@ canvas.addEventListener("mousedown", e => {
             fishes.forEach(fish => {
                 fish.changeState(Fish.states.FOLLOWING);
             });
+
             break;
 
         case 3: //Right mb
@@ -252,20 +257,21 @@ function displayFishAmount(amount) {
     document.querySelector("#fish-display").textContent = "Fish Amount: " + amount;
 }
 
-function loadSprites() {
-    const obj = {
 
-    }
+//Load audio
+const sndAmbience = new Audio("./src/audio/underwater_ambience.mp3");
+sndAmbience.play();
+sndAmbience.loop = true;
+const sndBubbles1 = new Audio("./src/audio/bubbles1.mp3");
+const sndBubbles2 = new Audio("./src/audio/bubbles2.mp3");
+sndBubbles2.volume = .3;
+const sndBubbleSingle = new Audio("./src/audio/bubbles_single.mp3");
 
-    const fishSprite = new Image();
-    fishSprite.src = "./src/assets/fish.png";
-    const enemy1Sprite = new Image();
-    enemy1Sprite.src = "./src/assets/enemyfish.png";
-    const enemy2Sprite = new Image();
-    enemy2Sprite.src = "./src/assets/enemyfish2.png";
-    const corpseSprite = new Image();
-    corpseSprite.src = "./src/assets/corpse.png";
-}
+sndBubbles1.mozPreservesPitch = false;
+sndBubbles2.mozPreservesPitch = false;
+sndBubbleSingle.mozPreservesPitch = false;
+sndBubbleSingle.volume = .1;
+
 
 
 

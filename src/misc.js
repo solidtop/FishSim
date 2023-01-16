@@ -35,7 +35,7 @@ export function randomRange(a, b) {
 export function irandomRange(a, b) {
     if (a === b) return a;
 
-    return Math.round(Math.random() * (b - a) + a);   
+    return Math.floor(Math.random() * (b - a) + a);   
 }
 
 export function lerp(n1, n2, t) {
