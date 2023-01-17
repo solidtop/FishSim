@@ -399,11 +399,6 @@ class EnemyParent extends FishParent {
                 this.target.obj.isTargeted = false;
             }
         }, time * 1000);
-
-        this.sndMovement = new Audio("./src/audio/underwater_movement.mp3");
-        this.sndMovement.loop = false;
-        this.sndMovement.playbackRate = randomRange(.8, 2);
-        this.sndMovement.volume = .5;
     }    
 
     handleStates(deltaTime) {
@@ -470,9 +465,7 @@ class EnemyParent extends FishParent {
                     removeFish(index);
                     this.changeState(Fish.states.IDLING);
                     spawnBubbles(this.x, this.y, randomRange(8, 16));
-                    this.sndMovement.currentTime = Math.random() * this.sndMovement.duration;
-                    this.sndMovement.play();
-
+                  
                     this.canPerformAction = false;
                     this.timer["canPerformAction"] = Fish.actionCooldown;
                 }
@@ -485,8 +478,6 @@ class EnemyParent extends FishParent {
 
                     this.changeState(Fish.states.IDLING);
                     spawnBubbles(target.x, target.y, randomRange(8, 16));
-                    this.sndMovement.currentTime = Math.random() * this.sndMovement.duration;
-                    this.sndMovement.play();
 
                     this.canPerformAction = false;
                     this.timer["canPerformAction"] = Fish.actionCooldown;
@@ -516,9 +507,6 @@ class EnemyParent extends FishParent {
         }
         const deviation = randomRange(-.05, .1); 
         this.wiggleSpeed = this.targetSpeed >= 2 ? .3 + deviation: .7 + deviation;
-
-        this.sndMovement.pause();
-        this.sndMovement.currentTime = 0;
     }
 }
 
